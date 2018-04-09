@@ -176,6 +176,7 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity {
     private boolean mPrefShowETA;
     private boolean mShowTimer;
     protected boolean mPrefWhiteboard;
+    private boolean mShowKeyboard;
     private int mPrefFullscreenReview;
     private int mCardZoom;
     private int mImageZoom;
@@ -577,7 +578,15 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity {
             }
             // set the correct mark/unmark icon on action bar
             refreshActionBar();
-            findViewById(R.id.root_layout).requestFocus();
+
+            //we are focusing root_layout, which I think may have been by design to hide the
+            //virtual keyboard.
+            //if we change focus to mAnswerField we have a solution to Issue #4699
+            if (mShowKeyboard) {
+                mAnswerField.performClick();
+            } else {
+                findViewById(R.id.root_layout).requestFocus();
+            }
         }
     }
 
@@ -1621,7 +1630,11 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity {
         mEase4Layout.setVisibility(View.GONE);
         mFlipCardLayout.setVisibility(View.VISIBLE);
         if (typeAnswer()) {
-            mAnswerField.requestFocus();
+            //note: previously this call did nothing as it was followed by a call to
+            //focus the root_layout
+            if (mShowKeyboard) {
+                mAnswerField.requestFocus();
+            }
         } else {
             mFlipCardLayout.requestFocus();
         }
@@ -1689,6 +1702,7 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity {
         mCardZoom = preferences.getInt("cardZoom", 100);
         mImageZoom = preferences.getInt("imageZoom", 100);
         mRelativeButtonSize = preferences.getInt("answerButtonSize", 100);
+        mShowKeyboard = preferences.getBoolean("alwaysShowVirtKb", false);
         mSpeakText = preferences.getBoolean("tts", false);
         mPrefUseTimer = preferences.getBoolean("timeoutAnswer", false);
         mWaitAnswerSecond = preferences.getInt("timeoutAnswerSeconds", 20);

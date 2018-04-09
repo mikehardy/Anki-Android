@@ -140,6 +140,8 @@
     <string name="time_limit_summ">XXX min</string>
     <string name="day_offset">Start of next day</string>
     <string name="day_offset_summ">XXX hours past midnight</string>
+    <string name="show_virt_kybd">Automatically show the keyboard when cards require input.</string>
+    <string name="show_virt_kybd_summ">Show keyboard</string>
     <string name="pref_keep_screen_on">Keep screen on</string>
     <string name="pref_keep_screen_on_summ">Disable screen timeout</string>
     <string name="convert_fen_text">Chess notation support</string>
