@@ -51,6 +51,11 @@ licenses:
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
 
+# Set up Code coverage tools
+before_install:
+  - sudo apt-get install jq
+  - wget -O ~/codacy-coverage-reporter-assembly-latest.jar $(curl https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r .assets[0].browser_download_url)
+
 # Emulator Management: Create, Start and Wait
 install:
   - echo 'count=0' > /home/travis/.android/repositories.cfg # Avoid harmless sdkmanager warning
@@ -64,6 +69,9 @@ before_script:
   - adb shell input keyevent 82 &
 
 script: ./gradlew test :AnkiDroid:connectedCheck
+
+after_success:
+  - java -jar ~/codacy-coverage-reporter-assembly-latest.jar report -l Java -r build/reports/jacoco/report.xml
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
