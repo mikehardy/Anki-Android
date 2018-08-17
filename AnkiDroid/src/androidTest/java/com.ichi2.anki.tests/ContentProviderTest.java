@@ -28,7 +28,6 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
-import android.test.AndroidTestCase;
 import android.util.Log;
 
 import com.ichi2.anki.AbstractFlashcardViewer;
@@ -55,6 +54,9 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
+
+import timber.log.Timber;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -162,7 +164,13 @@ public class ContentProviderTest {
         assertEquals("Check that all created decks have been deleted", mNumDecksBeforeTest, col.getDecks().count());
         // Delete test model
         col.modSchema(false);
-        col.getModels().rem(col.getModels().get(mModelId));
+        // FIXME these tests are flaky now: java.util.NoSuchElementException on occasion in CI
+        try {
+            col.getModels().rem(col.getModels().get(mModelId));
+            Timber.i("Test model successfully deleted");
+        } catch (NoSuchElementException nsee) {
+            Timber.w(nsee, "Unable to delete test model?");
+        }
     }
 
 
@@ -456,8 +464,8 @@ public class ContentProviderTest {
     /**
      * Query .../models URI
      */
-    // FIXME BROKEN AT THE MOMENT @Test
-    public void doNotTestQueryAllModels() {
+    @Test
+    public void testQueryAllModels() {
         final ContentResolver cr = InstrumentationRegistry.getTargetContext().getContentResolver();
         // Query all available models
         final Cursor allModels = cr.query(FlashCardsContract.Model.CONTENT_URI, null, null, null, null);
