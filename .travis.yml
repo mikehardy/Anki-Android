@@ -62,7 +62,7 @@ install:
   - echo yes | sdkmanager tools # 'emulator' is deprecated, 'avdmanager' is current, this installs it
   - echo yes | sdkmanager "system-images;android-$API;$EMU_FLAVOR;$ABI" # install our emulator
   - echo no | avdmanager create avd --force -n test -k "system-images;android-$API;$EMU_FLAVOR;$ABI" -c 10M
-  - emulator -avd test -engine classic -no-window $AUDIO -camera-back none -camera-front none -selinux permissive -cores 2 -qemu -m 2048 &
+  - emulator -avd test -engine classic -no-window $AUDIO -camera-back none -camera-front none -selinux permissive -qemu -m 2048 &
 
 before_script:
   - android-wait-for-emulator
