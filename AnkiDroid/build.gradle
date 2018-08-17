@@ -50,7 +50,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:26.1.0'
     // Note: the design support library can be quite buggy, so test everything thoroughly before updating it
-    implementation 'com.android.support:design:26.1.0'
+    implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:customtabs:26.1.0'
     implementation 'com.android.support:recyclerview-v7:26.1.0'
     implementation 'io.requery:sqlite-android:3.16.0'
