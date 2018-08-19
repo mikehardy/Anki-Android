@@ -103,25 +103,30 @@ public class ContentProviderTest {
      * Initially create one note for each model.
      */
     @Before
-    public void setUp() throws Exception {
-        Log.i(AnkiDroidApp.TAG, "setUp()");
-        mCreatedNotes = new ArrayList<>();
-        final Collection col = CollectionHelper.getInstance().getCol(InstrumentationRegistry.getTargetContext());
-        // Add a new basic model that we use for testing purposes (existing models could potentially be corrupted)
-        JSONObject model = Models.addBasicModel(col, BASIC_MODEL_NAME);
-        mModelId = model.getLong("id");
-        ArrayList<String> flds = col.getModels().fieldNames(model);
-        // Use the names of the fields as test values for the notes which will be added
-        mDummyFields = flds.toArray(new String[flds.size()]);
-        // create test decks and add one note for every deck
-        mNumDecksBeforeTest = col.getDecks().count();
-        for(int i = 0; i < TEST_DECKS.length; i++) {
-            long did = col.getDecks().id(TEST_DECKS[i]);
-            mTestDeckIds[i] = did;
-            mCreatedNotes.add(setupNewNote(col, mModelId, did, mDummyFields, TEST_TAG));
+    public void setUp() {
+        try {
+            Log.i(AnkiDroidApp.TAG, "setUp()");
+            mCreatedNotes = new ArrayList<>();
+            final Collection col = CollectionHelper.getInstance().getCol(InstrumentationRegistry.getTargetContext());
+            // Add a new basic model that we use for testing purposes (existing models could potentially be corrupted)
+            JSONObject model = Models.addBasicModel(col, BASIC_MODEL_NAME);
+            mModelId = model.getLong("id");
+            ArrayList<String> flds = col.getModels().fieldNames(model);
+            // Use the names of the fields as test values for the notes which will be added
+            mDummyFields = flds.toArray(new String[flds.size()]);
+            // create test decks and add one note for every deck
+            mNumDecksBeforeTest = col.getDecks().count();
+            for (int i = 0; i < TEST_DECKS.length; i++) {
+                long did = col.getDecks().id(TEST_DECKS[i]);
+                mTestDeckIds[i] = did;
+                mCreatedNotes.add(setupNewNote(col, mModelId, did, mDummyFields, TEST_TAG));
+            }
+            // Add a note to the default deck as well so that testQueryNextCard() works
+            mCreatedNotes.add(setupNewNote(col, mModelId, 1, mDummyFields, TEST_TAG));
         }
-        // Add a note to the default deck as well so that testQueryNextCard() works
-        mCreatedNotes.add(setupNewNote(col, mModelId, 1, mDummyFields, TEST_TAG));
+        catch (Throwable t) {
+            Timber.e(new Exception("unknown problem", t));
+        }
     }
 
     private static Uri setupNewNote(Collection col, long mid, long did, String[] flds, String tag) {
@@ -142,34 +147,39 @@ public class ContentProviderTest {
      * Remove the notes and decks created in setUp().
      */
     @After
-    public void tearDown() throws Exception {
-        Log.i(AnkiDroidApp.TAG, "tearDown()");
-        final Collection col = CollectionHelper.getInstance().getCol(InstrumentationRegistry.getTargetContext());
-        // Delete all notes
-        List<Long> remnantNotes = col.findNotes("tag:" + TEST_TAG);
-        if (remnantNotes.size() > 0) {
-            long[] nids = new long[remnantNotes.size()];
-            for (int i = 0; i < remnantNotes.size(); i++) {
-                nids[i] = remnantNotes.get(i);
-            }
-            col.remNotes(nids);
-            col.save();
-            assertEquals("Check that remnant notes have been deleted", 0, col.findNotes("tag:" + TEST_TAG).size());
-        }
-        // delete test decks
-        for(long did : mTestDeckIds) {
-            col.getDecks().rem(did, true);
-        }
-        col.getDecks().flush();
-        assertEquals("Check that all created decks have been deleted", mNumDecksBeforeTest, col.getDecks().count());
-        // Delete test model
-        col.modSchema(false);
-        // FIXME these tests are flaky now: java.util.NoSuchElementException on occasion in CI
+    public void tearDown() {
         try {
-            col.getModels().rem(col.getModels().get(mModelId));
-            Timber.i("Test model successfully deleted");
-        } catch (NoSuchElementException nsee) {
-            Timber.w(nsee, "Unable to delete test model?");
+            Log.i(AnkiDroidApp.TAG, "tearDown()");
+            final Collection col = CollectionHelper.getInstance().getCol(InstrumentationRegistry.getTargetContext());
+            // Delete all notes
+            List<Long> remnantNotes = col.findNotes("tag:" + TEST_TAG);
+            if (remnantNotes.size() > 0) {
+                long[] nids = new long[remnantNotes.size()];
+                for (int i = 0; i < remnantNotes.size(); i++) {
+                    nids[i] = remnantNotes.get(i);
+                }
+                col.remNotes(nids);
+                col.save();
+                assertEquals("Check that remnant notes have been deleted", 0, col.findNotes("tag:" + TEST_TAG).size());
+            }
+            // delete test decks
+            for (long did : mTestDeckIds) {
+                col.getDecks().rem(did, true);
+            }
+            col.getDecks().flush();
+            assertEquals("Check that all created decks have been deleted", mNumDecksBeforeTest, col.getDecks().count());
+            // Delete test model
+            col.modSchema(false);
+            // FIXME these tests are flaky now: java.util.NoSuchElementException on occasion in CI
+            try {
+                col.getModels().rem(col.getModels().get(mModelId));
+                Timber.i("Test model successfully deleted");
+            } catch (NoSuchElementException nsee) {
+                Timber.w(nsee, "Unable to delete test model?");
+            }
+        }
+        catch (Throwable t) {
+            Timber.e(new Exception("Unexpected problem in tearDown()", t));
         }
     }
 
