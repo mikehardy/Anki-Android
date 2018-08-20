@@ -34,7 +34,7 @@ matrix:
   fast_finish: true # We can report success without waiting for these
   allow_failures:
 #    - env: API=15 SKIP_COVERAGE=true # sometimes emulator hangs, sometimes not - possibly fixable
-#    - env: API=17 SKIP_COVERAGE=false # try coverage, but if it flakes, it isn't a fail
+    - env: API=17 SKIP_COVERAGE=false # try coverage, but if it flakes, it isn't a fail
 #    - env: API=23 SKIP_COVERAGE=true EMU_FLAVOR=google_apis # has permission errors
 #    - env: API=25 SKIP_COVERAGE=true EMU_FLAVOR=google_apis # has permission errors
 
@@ -57,7 +57,7 @@ licenses:
 # Set up Code coverage tools
 before_install:
   - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then sudo apt-get install jq; fi
-  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then wget -O ~/codacy-coverage-reporter-assembly-latest.jar $(curl https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r .assets[0].browser_download_url); fie
+  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then wget -O ~/codacy-coverage-reporter-assembly-latest.jar $(curl https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r .assets[0].browser_download_url); fi
 
 # Emulator Management: Create, Start and Wait
 install:
