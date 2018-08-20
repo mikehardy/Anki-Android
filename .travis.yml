@@ -72,7 +72,7 @@ before_script:
   - adb shell input keyevent 82 &
 
 script:
-  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then ./gradlew test :AnkiDriod:connectedCheck; fi
+  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then ./gradlew test :AnkiDroid:connectedCheck; fi
   - if [[ ( "$SKIP_COVERAGE" == "true" ) ]]; then ./gradlew jacocoTestReport; fi
 
 after_success:
