@@ -72,8 +72,8 @@ before_script:
   - adb shell input keyevent 82 &
 
 script:
-  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then ./gradlew test :AnkiDroid:connectedCheck; fi
-  - if [[ ( "$SKIP_COVERAGE" == "true" ) ]]; then ./gradlew jacocoTestReport; fi
+  - if [[ ( "$SKIP_COVERAGE" == "true" ) ]]; then ./gradlew test :AnkiDroid:connectedCheck; fi
+  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then ./gradlew jacocoTestReport; fi
 
 after_success:
   - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then java -jar ~/codacy-coverage-reporter-assembly-latest.jar report -l Java -r AnkiDroid/build/reports/jacoco/report.xml; fi
