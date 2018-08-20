@@ -15,28 +15,28 @@ env:
     - TOOLS=${ANDROID_HOME}/tools
     - PATH=${ANDROID_HOME}:${ANDROID_HOME}/emulator:${TOOLS}:${TOOLS}/bin:${ANDROID_HOME}/platform-tools:${PATH}
   matrix:
-#   - API=15 SKIP_COVERAGE=true
-#   - API=16 SKIP_COVERAGE=true AUDIO=-no-audio
-   # API 17 seems to be the most stable for coverage, do one run with it for Codacy.com
+   - API=15 SKIP_COVERAGE=true
+   - API=16 SKIP_COVERAGE=true AUDIO=-no-audio
    - API=17 SKIP_COVERAGE=true
-   - API=17 SKIP_COVERAGE=false
-#   - API=18 SKIP_COVERAGE=true
-#   - API=19 SKIP_COVERAGE=true
+   - API=18 SKIP_COVERAGE=true
+   - API=19 SKIP_COVERAGE=true
    # API 20 doesn't have an emulator
-#   - API=21 SKIP_COVERAGE=true
-#   - API=22 SKIP_COVERAGE=true
-#   - API=23 SKIP_COVERAGE=true EMU_FLAVOR=google_apis
-#   - API=24 SKIP_COVERAGE=true
-#   - API=25 SKIP_COVERAGE=true EMU_FLAVOR=google_apis
+   - API=21 SKIP_COVERAGE=true
+   - API=22 SKIP_COVERAGE=true
+   - API=23 SKIP_COVERAGE=true EMU_FLAVOR=google_apis
+   # API 24 seems to be the most stable for coverage? do one run with it for Codacy.com
+   - API=24 SKIP_COVERAGE=false
+   - API=24 SKIP_COVERAGE=true
+   - API=25 SKIP_COVERAGE=true EMU_FLAVOR=google_apis
    # API >= 26 don't have arm emulators, and Travis doesn't support x86
 
 matrix:
   fast_finish: true # We can report success without waiting for these
   allow_failures:
-#    - env: API=15 SKIP_COVERAGE=true # sometimes emulator hangs, sometimes not - possibly fixable
-    - env: API=17 SKIP_COVERAGE=false # try coverage, but if it flakes, it isn't a fail
-#    - env: API=23 SKIP_COVERAGE=true EMU_FLAVOR=google_apis # has permission errors
-#    - env: API=25 SKIP_COVERAGE=true EMU_FLAVOR=google_apis # has permission errors
+    - env: API=15 SKIP_COVERAGE=true # sometimes emulator hangs, sometimes not - possibly fixable
+    - env: API=23 SKIP_COVERAGE=true EMU_FLAVOR=google_apis # has permission errors
+    - env: API=24 SKIP_COVERAGE=false # try coverage, but if it flakes, it isn't a fail
+    - env: API=25 SKIP_COVERAGE=true EMU_FLAVOR=google_apis # has permission errors
 
 android:
   components:
