@@ -44,7 +44,7 @@ android:
     - tools
     - platform-tools
     - tools              # a second time per Travis official docs, necessary for newest versions
-    - build-tools-28.0.2 # Automated dependency from gradle - gradle will drive the changes
+    - build-tools-27.0.3 # Automated dependency from gradle - gradle will drive the changes
     - android-$API       # We need the API of the emulator we will run
     - android-26         # We need the API of the current build target
     - extra-android-m2repository
