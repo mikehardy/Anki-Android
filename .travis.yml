@@ -1,6 +1,6 @@
 language: android
 
-sudo: false
+sudo: true
 
 jdk:
   - oraclejdk8
@@ -15,25 +15,28 @@ env:
     - TOOLS=${ANDROID_HOME}/tools
     - PATH=${ANDROID_HOME}:${ANDROID_HOME}/emulator:${TOOLS}:${TOOLS}/bin:${ANDROID_HOME}/platform-tools:${PATH}
   matrix:
-   - API=15
-   - API=16 AUDIO=-no-audio
-   - API=17
-   - API=18
-   - API=19
+   - API=15 SKIP_COVERAGE=true
+   - API=16 SKIP_COVERAGE=true AUDIO=-no-audio
+   - API=17 SKIP_COVERAGE=true
+   - API=18 SKIP_COVERAGE=true
+   - API=19 SKIP_COVERAGE=true
    # API 20 doesn't have an emulator
-   - API=21
-   - API=22
-   - API=23 EMU_FLAVOR=google_apis
-   - API=24
-   - API=25 EMU_FLAVOR=google_apis
+   - API=21 SKIP_COVERAGE=true
+   - API=22 SKIP_COVERAGE=true
+   - API=23 SKIP_COVERAGE=true EMU_FLAVOR=google_apis
+   # API 24 seems to be the most stable for coverage? do one run with it for Codacy.com
+   - API=24 SKIP_COVERAGE=false
+   - API=24 SKIP_COVERAGE=true
+   - API=25 SKIP_COVERAGE=true EMU_FLAVOR=google_apis
    # API >= 26 don't have arm emulators, and Travis doesn't support x86
 
 matrix:
   fast_finish: true # We can report success without waiting for these
   allow_failures:
-    - env: API=15  # sometimes emulator hangs, sometimes not - possibly fixable
-    - env: API=23 EMU_FLAVOR=google_apis # has permission errors
-    - env: API=25 EMU_FLAVOR=google_apis # has permission errors
+    - env: API=15 SKIP_COVERAGE=true # sometimes emulator hangs, sometimes not - possibly fixable
+    - env: API=23 SKIP_COVERAGE=true EMU_FLAVOR=google_apis # has permission errors
+    - env: API=24 SKIP_COVERAGE=false # try coverage, but if it flakes, it isn't a fail
+    - env: API=25 SKIP_COVERAGE=true EMU_FLAVOR=google_apis # has permission errors
 
 android:
   components:
@@ -51,19 +54,29 @@ licenses:
     - 'android-sdk-license-.+'
     - 'google-gdk-license-.+'
 
+# Set up Code coverage tools
+before_install:
+  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then sudo apt-get install jq; fi
+  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then wget -O ~/codacy-coverage-reporter-assembly-latest.jar $(curl https://api.github.com/repos/codacy/codacy-coverage-reporter/releases/latest | jq -r .assets[0].browser_download_url); fi
+
 # Emulator Management: Create, Start and Wait
 install:
   - echo 'count=0' > /home/travis/.android/repositories.cfg # Avoid harmless sdkmanager warning
   - echo yes | sdkmanager tools # 'emulator' is deprecated, 'avdmanager' is current, this installs it
   - echo yes | sdkmanager "system-images;android-$API;$EMU_FLAVOR;$ABI" # install our emulator
   - echo no | avdmanager create avd --force -n test -k "system-images;android-$API;$EMU_FLAVOR;$ABI" -c 10M
-  - emulator -avd test -engine classic -no-window $AUDIO -camera-back none -camera-front none -selinux permissive -qemu -m 512 &
+  - emulator -avd test -engine classic -no-window $AUDIO -camera-back none -camera-front none -selinux permissive -qemu -m 2048 &
 
 before_script:
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
 
-script: ./gradlew test :AnkiDroid:connectedCheck
+script:
+  - if [[ ( "$SKIP_COVERAGE" == "true" ) ]]; then ./gradlew test :AnkiDroid:connectedCheck; fi
+  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then ./gradlew jacocoTestReport; fi
+
+after_success:
+  - if [[ ( "$SKIP_COVERAGE" == "false" ) ]]; then java -jar ~/codacy-coverage-reporter-assembly-latest.jar report -l Java -r AnkiDroid/build/reports/jacoco/report.xml; fi
 
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
