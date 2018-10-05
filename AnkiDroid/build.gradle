@@ -143,7 +143,7 @@ dependencies {
     androidTestImplementation('androidx.test:runner:1.1.0-alpha4') {
         exclude group: 'com.android.support'
     }
-    androidTestImplementation('androidx.test:rules:1.1.0-alpha4') {
+    androidTestImplementation('androidx.test:rules:1.1.0-beta01') {
         exclude group: 'com.android.support'
     }
     androidTestUtil 'androidx.test:orchestrator:1.1.0-alpha4'
