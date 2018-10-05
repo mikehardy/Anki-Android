@@ -134,7 +134,7 @@ dependencies {
     testImplementation 'net.lachlanmckee:timber-junit-rule:1.0.1'
 
     androidTestImplementation 'com.azimolabs.conditionwatcher:conditionwatcher:0.2'
-    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-alpha4') {
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.1.0-beta01') {
         exclude group: 'com.android.support'
     }
     androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.1.0-alpha4', {
