@@ -493,9 +493,9 @@ public class Reviewer extends AbstractFlashcardViewer {
         getMenuInflater().inflate(R.menu.reviewer, menu);
         mActionButtons.setCustomButtonsStatus(menu);
         if (mCurrentCard != null && mCurrentCard.note().hasTag("marked")) {
-            menu.findItem(R.id.action_mark_card).setTitle(R.string.menu_unmark_note).setIcon(R.drawable.ic_star_white_24dp);
+            menu.findItem(R.id.action_mark_card).setTitle(R.string.menu_unmark_note).setIcon(R.drawable.ic_star_white);
         } else {
-            menu.findItem(R.id.action_mark_card).setTitle(R.string.menu_mark_note).setIcon(R.drawable.ic_star_outline_white_24dp);
+            menu.findItem(R.id.action_mark_card).setTitle(R.string.menu_mark_note).setIcon(R.drawable.ic_star_border_white);
         }
 
         if (mCurrentCard != null) {
@@ -528,7 +528,7 @@ public class Reviewer extends AbstractFlashcardViewer {
         } else {
             // We can arrive here even if `mShowWhiteboard &&
             // mWhiteboard != null` if no stroke had ever been made
-            undoIcon = R.drawable.ic_undo_white_24dp;
+            undoIcon = R.drawable.ic_undo_white;
             undoEnabled = (colIsOpen() && getCol().undoAvailable());
         }
         int alpha = (undoEnabled && getControlBlocked() != ReviewerUi.ControlBlock.SLOW) ? Themes.ALPHA_ICON_ENABLED_LIGHT : Themes.ALPHA_ICON_DISABLED_LIGHT ;
@@ -549,7 +549,7 @@ public class Reviewer extends AbstractFlashcardViewer {
             menu.findItem(R.id.action_save_whiteboard).setVisible(true);
             menu.findItem(R.id.action_change_whiteboard_pen_color).setVisible(true);
 
-            Drawable whiteboardIcon = ContextCompat.getDrawable(this, R.drawable.ic_gesture_white_24dp).mutate();
+            Drawable whiteboardIcon = ContextCompat.getDrawable(this, R.drawable.ic_gesture_white).mutate();
             Drawable whiteboardColorPaletteIcon = ContextCompat.getDrawable(this, R.drawable.ic_color_lens_white_24dp).mutate();
 
             if (mShowWhiteboard) {
@@ -585,14 +585,14 @@ public class Reviewer extends AbstractFlashcardViewer {
             menu.findItem(R.id.action_suspend).setIcon(R.drawable.ic_action_suspend_dropdown);
             menu.findItem(R.id.action_suspend).setTitle(R.string.menu_suspend);
         } else {
-            menu.findItem(R.id.action_suspend).setIcon(R.drawable.ic_action_suspend);
+            menu.findItem(R.id.action_suspend).setIcon(R.drawable.ic_pause_circle_outline);
             menu.findItem(R.id.action_suspend).setTitle(R.string.menu_suspend_card);
         }
         if (buryNoteAvailable()) {
             menu.findItem(R.id.action_bury).setIcon(R.drawable.ic_flip_to_back_white_24px_dropdown);
             menu.findItem(R.id.action_bury).setTitle(R.string.menu_bury);
         } else {
-            menu.findItem(R.id.action_bury).setIcon(R.drawable.ic_flip_to_back_white_24dp);
+            menu.findItem(R.id.action_bury).setIcon(R.drawable.ic_flip_to_back_white);
             menu.findItem(R.id.action_bury).setTitle(R.string.menu_bury_card);
         }
         MenuItemCompat.setActionProvider(menu.findItem(R.id.action_schedule), new ScheduleProvider(this));

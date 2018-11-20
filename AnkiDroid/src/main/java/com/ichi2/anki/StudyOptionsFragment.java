@@ -391,7 +391,7 @@ public class StudyOptionsFragment extends Fragment implements Toolbar.OnMenuItem
             }
             // Set the back button listener
             if (!mFragmented) {
-                mToolbar.setNavigationIcon(R.drawable.ic_arrow_back_white_24dp);
+                mToolbar.setNavigationIcon(R.drawable.ic_arrow_back_white);
                 mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
