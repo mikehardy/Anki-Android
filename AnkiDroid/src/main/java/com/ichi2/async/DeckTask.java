@@ -26,6 +26,7 @@ import com.google.gson.stream.JsonReader;
 import com.ichi2.anki.AnkiDroidApp;
 import com.ichi2.anki.BackupManager;
 import com.ichi2.anki.CardBrowser;
+import com.ichi2.anki.CardTemplateEditor;
 import com.ichi2.anki.CardUtils;
 import com.ichi2.anki.CollectionHelper;
 import com.ichi2.anki.R;
@@ -41,6 +42,7 @@ import com.ichi2.libanki.Storage;
 import com.ichi2.libanki.Utils;
 import com.ichi2.libanki.importer.AnkiPackageImporter;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -1310,14 +1312,63 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
     }
 
     /**
-     * Regenerate all the cards in a model
+     * Handles everything for a model change at once - template add / deletes as well as content updates
      */
     private TaskData doInBackgroundSaveModel(TaskData... params) {
         Timber.d("doInBackgroundSaveModel");
         Collection col = CollectionHelper.getInstance().getCol(mContext);
         Object [] args = params[0].getObjArray();
         JSONObject model = (JSONObject) args[0];
+        ArrayList<Object[]> templateChanges = (ArrayList<Object[]>)args[1];
+        JSONObject oldModel;
+        try {
+            oldModel = col.getModels().get(model.getLong("id"));
+        } catch (JSONException e) {
+            Timber.e("Unable to get old model from collection");
+            return new TaskData(false);
+        }
+
+        // TODO need to save all the cards that will go away, for undo
+        //  (do I need to remove them from graves during undo also?)
+        //    - undo (except for cards) could just be Models.update(model) / Models.flush() / Collection.reset() (that was prior "undo")
+        try {
+            JSONArray oldTemplates = oldModel.getJSONArray("tmpls");
+            JSONArray newTemplates = model.getJSONArray("tmpls");
+
+            // Template add/deletes always arrive all deletes first, to be processed in order
+            // After that since templates can't be repositioned, any "extra" templates in newTemplates must be adds
+            for (Object[] change : templateChanges) {
+                switch ((CardTemplateEditor.ChangeType)change[1]) {
+                    case ADD:
+                        Timber.d("doInBackgroundSaveModel() adding template %s", change[0]);
+                        try {
+                            col.getModels().addTemplate(oldModel, newTemplates.getJSONObject((int)change[0]));
+                        } catch (ConfirmModSchemaException e) {
+                            Timber.e("Unable to add template %s to model %s", change[0], model.getLong("id"));
+                            return new TaskData(false);
+                        }
+                        break;
+                    case DELETE:
+                        Timber.d("doInBackgroundSaveModel() deleting template currently at ordinal %s", change[0]);
+                        try {
+                            col.getModels().remTemplate(oldModel, oldTemplates.getJSONObject((int) change[0]));
+                        } catch (ConfirmModSchemaException e) {
+                            Timber.e("Unable to delete template %s from model %s", change[0], model.getLong("id"));
+                            return new TaskData(false);
+                        }
+                        break;
+                    default:
+                        Timber.w("Unknown change type? %s", change[1]);
+                        break;
+                }
+            }
+        } catch (JSONException e) {
+            Timber.e("Unable to compare template counts");
+            return new TaskData(false);
+        }
+
         col.getModels().save(model, true);
+        col.getModels().update(model);
         col.reset();
         col.save();
         return new TaskData(true);
