@@ -67,7 +67,7 @@ public class Previewer extends AbstractFlashcardViewer {
         }
 
         if (mEditedModel != null && mIndex != -1) {
-            Timber.d("onCreate() Previewer started with edited model and index, displaying blank to preview formatting");
+            Timber.d("onCreate() Previewer started with edited model and template index, displaying blank to preview formatting");
             mCurrentCard = getDummyCard(mEditedModel, mIndex);
             if (mCurrentCard == null) {
                 UIUtils.showSimpleSnackbar(this, R.string.invalid_template, false);
