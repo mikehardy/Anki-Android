@@ -45,6 +45,13 @@ public class SdCardReceiver extends BroadcastReceiver {
             Intent i = new Intent();
             i.setAction(MEDIA_EJECT);
             context.sendBroadcast(i);
+
+            // If the collection was not open to begin with, just return
+            if (!CollectionHelper.getInstance().colIsOpen()) {
+                return;
+            }
+
+            // The collection was open, we'll try to close it.
             try {
                 Collection col = CollectionHelper.getInstance().getCol(context);
                 if (col != null) {
