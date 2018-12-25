@@ -45,22 +45,22 @@ import android.view.WindowManager.BadTokenException;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.ichi2.anki.receiver.BootReceiver;
+import com.ichi2.anki.receiver.NotificationReceiver;
+import com.ichi2.libanki.hooks.AdvancedStatistics;
+import com.ichi2.themes.Themes;
+import com.ichi2.ui.AppCompatPreferenceActivity;
+import com.ichi2.ui.SeekBarPreference;
 import com.ichi2.anim.ActivityTransitionAnimation;
 import com.ichi2.anki.exception.StorageAccessException;
-import com.ichi2.anki.services.BootService;
-import com.ichi2.anki.services.NotificationService;
 import com.ichi2.compat.CompatHelper;
 import com.ichi2.libanki.Collection;
 import com.ichi2.libanki.Utils;
-import com.ichi2.libanki.hooks.AdvancedStatistics;
 import com.ichi2.libanki.hooks.ChessFilter;
 import com.ichi2.libanki.hooks.HebrewFixFilter;
 import com.ichi2.libanki.hooks.Hooks;
 import com.ichi2.preferences.NumberRangePreference;
-import com.ichi2.themes.Themes;
-import com.ichi2.ui.AppCompatPreferenceActivity;
 import com.ichi2.ui.ConfirmationPreference;
-import com.ichi2.ui.SeekBarPreference;
 import com.ichi2.utils.LanguageUtil;
 import com.ichi2.anki.analytics.UsageAnalytics;
 import com.ichi2.utils.VersionUtils;
@@ -494,7 +494,7 @@ public class Preferences extends AppCompatPreferenceActivity implements Preferen
                     date.set(Calendar.HOUR_OF_DAY, hours);
                     getCol().setCrt(date.getTimeInMillis() / 1000);
                     getCol().setMod();
-                    BootService.scheduleNotification(this);
+                    BootReceiver.scheduleGlobalReminder(this);
                     break;
                 }
                 case "minimumCardsDueForNotification": {
@@ -502,10 +502,10 @@ public class Preferences extends AppCompatPreferenceActivity implements Preferen
                     if (listpref != null) {
                         updateNotificationPreference(listpref);
                         if (Integer.valueOf(listpref.getValue()) < 1000000) {
-                            BootService.scheduleNotification(this);
+                            BootReceiver.scheduleGlobalReminder(this);
                         } else {
                             PendingIntent intent = PendingIntent.getBroadcast(this, 0,
-                                    new Intent(this, NotificationService.class), 0);
+                                    new Intent(this, NotificationReceiver.class), 0);
                             final AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
                             alarmManager.cancel(intent);
                         }

@@ -29,6 +29,7 @@ import com.ichi2.anki.analytics.UsageAnalytics;
 import com.ichi2.anki.dialogs.AsyncDialogFragment;
 import com.ichi2.anki.dialogs.DialogHandler;
 import com.ichi2.anki.dialogs.SimpleMessageDialog;
+import com.ichi2.anki.receiver.NotificationReceiver;
 import com.ichi2.async.CollectionLoader;
 import com.ichi2.compat.CompatHelper;
 import com.ichi2.compat.customtabs.CustomTabActivityHelper;
@@ -400,40 +401,43 @@ public class AnkiActivity extends AppCompatActivity implements SimpleMessageDial
 
     public void showSimpleNotification(String title, String message, NotificationChannels.Channel channel) {
         SharedPreferences prefs = AnkiDroidApp.getSharedPrefs(this);
+
         // Don't show notification if disabled in preferences
-        if (Integer.parseInt(prefs.getString("minimumCardsDueForNotification", "0")) <= 1000000) {
-            // Use the title as the ticker unless the title is simply "AnkiDroid"
-            String ticker = title;
-            if (title.equals(getResources().getString(R.string.app_name))) {
-                ticker = message;
-            }
-            // Build basic notification
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(this,
-                    NotificationChannels.getId(channel))
-                    .setSmallIcon(R.drawable.ic_stat_notify)
-                    .setContentTitle(title)
-                    .setContentText(message)
-                    .setColor(ContextCompat.getColor(this, R.color.material_light_blue_500))
-                    .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
-                    .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                    .setTicker(ticker);
-            // Enable vibrate and blink if set in preferences
-            if (prefs.getBoolean("widgetVibrate", false)) {
-                builder.setVibrate(new long[] { 1000, 1000, 1000});
-            }
-            if (prefs.getBoolean("widgetBlink", false)) {
-                builder.setLights(Color.BLUE, 1000, 1000);
-            }
-            // Creates an explicit intent for an Activity in your app
-            Intent resultIntent = new Intent(this, DeckPicker.class);
-            resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.setContentIntent(resultPendingIntent);
-            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            // mId allows you to update the notification later on.
-            notificationManager.notify(SIMPLE_NOTIFICATION_ID, builder.build());
+        if (NotificationReceiver.globalRemindersDisabled(this)) {
+            Timber.d("global work due reminders disabled");
+            return;
         }
 
+        // Use the title as the ticker unless the title is simply "AnkiDroid"
+        String ticker = title;
+        if (title.equals(getResources().getString(R.string.app_name))) {
+            ticker = message;
+        }
+        // Build basic notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,
+                NotificationChannels.getId(channel))
+                .setSmallIcon(R.drawable.ic_stat_notify)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setColor(ContextCompat.getColor(this, R.color.material_light_blue_500))
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setTicker(ticker);
+        // Enable vibrate and blink if set in preferences
+        if (prefs.getBoolean("widgetVibrate", false)) {
+            builder.setVibrate(new long[] {1000, 1000, 1000});
+        }
+        if (prefs.getBoolean("widgetBlink", false)) {
+            builder.setLights(Color.BLUE, 1000, 1000);
+        }
+        // Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(this, DeckPicker.class);
+        resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(this, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(resultPendingIntent);
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        notificationManager.notify(SIMPLE_NOTIFICATION_ID, builder.build());
     }
 
     public DialogHandler getDialogHandler() {

@@ -311,15 +311,11 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name=".services.NotificationService"
+        <receiver android:name=".receiver.NotificationReceiver"
             android:enabled="true"
             android:exported="false" />
         <receiver
-            android:name=".services.ReminderService"
-            android:enabled="true"
-            android:exported="false" />
-        <receiver
-            android:name=".services.BootService"
+            android:name=".receiver.BootReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

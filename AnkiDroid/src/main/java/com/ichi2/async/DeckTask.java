@@ -30,6 +30,7 @@ import com.ichi2.anki.CardUtils;
 import com.ichi2.anki.CollectionHelper;
 import com.ichi2.anki.R;
 import com.ichi2.anki.exception.ConfirmModSchemaException;
+import com.ichi2.anki.receiver.NotificationReceiver;
 import com.ichi2.libanki.AnkiPackageExporter;
 import com.ichi2.libanki.Card;
 import com.ichi2.libanki.Collection;
@@ -493,9 +494,7 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
                 if (oldCard != null) {
                     sched.answerCard(oldCard, ease);
                 }
-                if (newCard == null) {
-                    newCard = getCard(sched);
-                }
+                newCard = getCard(sched);
                 if (newCard != null) {
                     // render cards before locking database
                     newCard._getQA(true);
@@ -509,6 +508,11 @@ public class DeckTask extends BaseAsyncTask<DeckTask.TaskData, DeckTask.TaskData
             Timber.e(e, "doInBackgroundAnswerCard - RuntimeException on answering card");
             AnkiDroidApp.sendExceptionReport(e, "doInBackgroundAnswerCard");
             return new TaskData(false);
+        }
+        // Update any notifications
+        if (oldCard != null) {
+            NotificationReceiver.displayDeckReminderNotification(null, oldCard.getDid());
+            NotificationReceiver.displayGlobalWorkNotification(null);
         }
         return new TaskData(true);
     }

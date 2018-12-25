@@ -71,6 +71,7 @@
             android:title="@string/error_reporting_choice" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/notification_pref" >
+        <!-- 1000000 indicates no notification is requested -->
         <ListPreference
             android:defaultValue="1000000"
             android:entries="@array/notification_minimum_cards_due_labels"

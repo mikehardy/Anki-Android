@@ -35,7 +35,7 @@ import android.webkit.CookieManager;
 
 import com.ichi2.anki.analytics.AnkiDroidCrashReportDialog;
 import com.ichi2.anki.exception.StorageAccessException;
-import com.ichi2.anki.services.BootService;
+import com.ichi2.anki.receiver.BootReceiver;
 import com.ichi2.compat.CompatHelper;
 import com.ichi2.utils.LanguageUtil;
 import com.ichi2.anki.analytics.UsageAnalytics;
@@ -241,7 +241,8 @@ public class AnkiDroidApp extends Application {
                 }
             }
         }
-        new BootService().onReceive(this, new Intent(this, BootService.class));
+        Timber.d("Calling BootReceiver.onReceive() to set up schedules");
+        new BootReceiver().onReceive(this, new Intent(this, BootReceiver.class));
     }
 
 
@@ -316,8 +317,7 @@ public class AnkiDroidApp extends Application {
     @SuppressWarnings("deprecation") // Tracked as #4729 in github
     public static void setLanguage(String localeCode) {
         Configuration config = getInstance().getResources().getConfiguration();
-        Locale newLocale = LanguageUtil.getLocale(localeCode);
-        config.locale = newLocale;
+        config.locale = LanguageUtil.getLocale(localeCode);
         getInstance().getResources().updateConfiguration(config, getInstance().getResources().getDisplayMetrics());
     }
 
@@ -395,7 +395,6 @@ public class AnkiDroidApp extends Application {
 
     /**
      * Get the url for the feedback page
-     * @return
      */
     public static String getFeedbackUrl() {
         if (isCurrentLanguage("ja")) {
@@ -409,7 +408,6 @@ public class AnkiDroidApp extends Application {
 
     /**
      * Get the url for the manual
-     * @return
      */
     public static String getManualUrl() {
         if (isCurrentLanguage("ja")) {
@@ -424,7 +422,6 @@ public class AnkiDroidApp extends Application {
     /**
      * Check whether l is the currently set language code
      * @param l ISO2 language code
-     * @return
      */
     private static boolean isCurrentLanguage(String l) {
         String pref = getSharedPrefs(sInstance).getString(Preferences.LANGUAGE, "");

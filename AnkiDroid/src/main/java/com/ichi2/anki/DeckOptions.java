@@ -1,6 +1,3 @@
-
-package com.ichi2.anki;
-
 /****************************************************************************************
  * Copyright (c) 2009 Casey Link <unnamedrambler@gmail.com>                             *
  * Copyright (c) 2012 Norbert Nagold <norbert.nagold@gmail.com>                         *
@@ -18,8 +15,9 @@ package com.ichi2.anki;
  * this program.  If not, see <http://www.gnu.org/licenses/>.                           *
  ****************************************************************************************/
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
+package com.ichi2.anki;
+
+
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -41,8 +39,9 @@ import android.view.MenuItem;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.ichi2.anim.ActivityTransitionAnimation;
 import com.ichi2.anki.exception.ConfirmModSchemaException;
+import com.ichi2.anki.receiver.BootReceiver;
+import com.ichi2.anki.receiver.NotificationReceiver;
 import com.ichi2.anki.receiver.SdCardReceiver;
-import com.ichi2.anki.services.ReminderService;
 import com.ichi2.async.DeckTask;
 import com.ichi2.libanki.Collection;
 import com.ichi2.preferences.StepsPreference;
@@ -56,7 +55,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -340,30 +338,8 @@ public class DeckOptions extends AppCompatPreferenceActivity implements OnShared
 
                                 mOptions.put("reminder", reminder);
 
-                                final AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                                final PendingIntent reminderIntent = PendingIntent.getBroadcast(
-                                        getApplicationContext(),
-                                        (int) mDeck.getLong("id"),
-                                        new Intent(getApplicationContext(), ReminderService.class).putExtra
-                                                (ReminderService.EXTRA_DECK_ID, mDeck.getLong("id")),
-                                        0
-                                );
-
-                                alarmManager.cancel(reminderIntent);
-                                if ((Boolean) value) {
-                                    final Calendar calendar = Calendar.getInstance();
-
-                                    calendar.set(Calendar.HOUR_OF_DAY, reminder.getJSONArray("time").getInt(0));
-                                    calendar.set(Calendar.MINUTE, reminder.getJSONArray("time").getInt(1));
-                                    calendar.set(Calendar.SECOND, 0);
-
-                                    alarmManager.setRepeating(
-                                            AlarmManager.RTC_WAKEUP,
-                                            calendar.getTimeInMillis(),
-                                            AlarmManager.INTERVAL_DAY,
-                                            reminderIntent
-                                    );
-                                }
+                                // setup our deck reminders again
+                                BootReceiver.scheduleDeckReminders(getApplicationContext());
                                 break;
                             }
                             case "reminderTime": {
@@ -374,30 +350,8 @@ public class DeckOptions extends AppCompatPreferenceActivity implements OnShared
                                         .put(TimePreference.parseMinutes((String) value)));
 
                                 mOptions.put("reminder", reminder);
-
-                                final AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-                                final PendingIntent reminderIntent = PendingIntent.getBroadcast(
-                                        getApplicationContext(),
-                                        (int) mDeck.getLong("id"),
-                                        new Intent(getApplicationContext(), ReminderService.class).putExtra
-                                                (ReminderService.EXTRA_DECK_ID, mDeck.getLong("id")),
-                                        0
-                                );
-
-                                alarmManager.cancel(reminderIntent);
-
-                                final Calendar calendar = Calendar.getInstance();
-
-                                calendar.set(Calendar.HOUR_OF_DAY, reminder.getJSONArray("time").getInt(0));
-                                calendar.set(Calendar.MINUTE, reminder.getJSONArray("time").getInt(1));
-                                calendar.set(Calendar.SECOND, 0);
-
-                                alarmManager.setRepeating(
-                                        AlarmManager.RTC_WAKEUP,
-                                        calendar.getTimeInMillis(),
-                                        AlarmManager.INTERVAL_DAY,
-                                        reminderIntent
-                                );
+                                // setup our deck reminders again
+                                BootReceiver.scheduleDeckReminders(getApplicationContext());
                                 break;
                             }
                             default:
@@ -578,6 +532,7 @@ public class DeckOptions extends AppCompatPreferenceActivity implements OnShared
 
         @Override
         public void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
+            Timber.d("Registering preference change listener %s", listener);
             listeners.add(listener);
         }
 

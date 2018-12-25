@@ -6,8 +6,8 @@ import android.os.Bundle;
 import android.os.Message;
 
 import com.ichi2.anki.dialogs.DialogHandler;
-import com.ichi2.anki.services.ReminderService;
 import com.ichi2.utils.ImportUtils;
+import com.ichi2.anki.receiver.NotificationReceiver;
 
 import timber.log.Timber;
 
@@ -51,10 +51,9 @@ public class IntentHandler extends Activity {
             reloadIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(reloadIntent);
             AnkiActivity.finishActivityWithFade(this);
-        } else if (intent.hasExtra(ReminderService.EXTRA_DECK_ID)) {
+        } else if (intent.hasExtra(NotificationReceiver.EXTRA_DECK_ID)) {
             final Intent reviewIntent = new Intent(this, Reviewer.class);
-
-            CollectionHelper.getInstance().getCol(this).getDecks().select(intent.getLongExtra(ReminderService.EXTRA_DECK_ID, 0));
+            CollectionHelper.getInstance().getCol(this).getDecks().select(intent.getLongExtra(NotificationReceiver.EXTRA_DECK_ID, 0));
             startActivity(reviewIntent);
             AnkiActivity.finishActivityWithFade(this);
         } else {
