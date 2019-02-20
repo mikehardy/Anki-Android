@@ -29,12 +29,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.android.controller.ActivityController;
 
 import java.util.ArrayList;
 
-@RunWith(RobolectricTestRunner.class)
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
+@RunWith(AndroidJUnit4.class)
 public class PreviewerTest extends RobolectricTest {
 
     @Test
@@ -113,9 +114,4 @@ public class PreviewerTest extends RobolectricTest {
         n.flush();
         return getCol()._newCard(new Card(getCol()), n, (JSONObject)model.getJSONArray("tmpls").get(ordinal), 1, true);
     }
-}
-
-class TestPreviewer extends Previewer {
-    public boolean getShowingAnswer() { return mShowingAnswer; }
-    public void disableDoubleClickPrevention() { mLastClickTime = (AbstractFlashcardViewer.DOUBLE_TAP_IGNORE_THRESHOLD * -2); }
 }

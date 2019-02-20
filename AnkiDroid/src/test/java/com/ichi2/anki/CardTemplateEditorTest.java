@@ -28,7 +28,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.RobolectricTestRunner;
 import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
@@ -39,14 +38,14 @@ import org.robolectric.shadows.ShadowToast;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import androidx.fragment.app.FragmentManager;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import timber.log.Timber;
 
 import static com.ichi2.anki.CardTemplateEditor.ChangeType.ADD;
 import static com.ichi2.anki.CardTemplateEditor.ChangeType.DELETE;
 
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(AndroidJUnit4.class)
 @Config(shadows = { ShadowViewPager.class })
 public class CardTemplateEditorTest extends RobolectricTest {
 
@@ -287,33 +286,5 @@ public class CardTemplateEditorTest extends RobolectricTest {
         Assert.assertNotEquals("model is unchanged?", collectionBasicModelOriginal, collectionBasicModelCopyEdited);
         Assert.assertEquals("model did not save?", testEditorModelEdited.toString().trim(), collectionBasicModelCopyEdited.toString().trim());
 
-    }
-}
-
-
-// Robolectric is great, but ViewPager support is very incomplete.
-// We have to avoid paging or we get exceptions
-// https://github.com/robolectric/robolectric/issues/3698
-class NonPagingCardTemplateEditor extends CardTemplateEditor {
-    public static int pagerCount = 2;
-
-
-    public void selectTemplate(int idx) { /* do nothing */ }
-
-
-    public TemplatePagerAdapter getNewTemplatePagerAdapter(FragmentManager fm) {
-        return new TestTemplatePagerAdapter(fm);
-    }
-
-
-    class TestTemplatePagerAdapter extends CardTemplateEditor.TemplatePagerAdapter {
-        private TestTemplatePagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
-
-
-        public int getCount() {
-            return pagerCount;
-        }
     }
 }
