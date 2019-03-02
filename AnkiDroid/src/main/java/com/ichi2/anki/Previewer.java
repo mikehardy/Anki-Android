@@ -24,15 +24,7 @@ import android.view.View;
 
 import com.ichi2.libanki.Card;
 import com.ichi2.libanki.Collection;
-import com.ichi2.libanki.Models;
-import com.ichi2.libanki.Note;
 import com.ichi2.themes.Themes;
-
-import org.json.JSONObject;
-
-import java.util.ArrayList;
-
-import javax.annotation.Nullable;
 
 import timber.log.Timber;
 
@@ -42,11 +34,9 @@ import timber.log.Timber;
  * buttons will be shown).
  */
 public class Previewer extends AbstractFlashcardViewer {
-    private long[] mCardList;
-    private int mIndex;
+    protected long[] mCardList;
+    protected int mIndex;
     protected boolean mShowingAnswer;
-    private String mEditedModelFileName = null;
-    private JSONObject mEditedModel = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,24 +47,8 @@ public class Previewer extends AbstractFlashcardViewer {
         if (parameters == null) {
             parameters = getIntent().getExtras();
         }
-        mEditedModelFileName = parameters.getString(CardTemplateEditor.INTENT_MODEL_FILENAME);
         mCardList = parameters.getLongArray("cardList");
         mIndex = parameters.getInt("index");
-
-        if (mEditedModelFileName != null) {
-            Timber.d("onCreate() loading edited model from %s", mEditedModelFileName);
-            mEditedModel = CardTemplateEditor.getTempModel(mEditedModelFileName);
-        }
-
-        if (mEditedModel != null && mIndex != -1) {
-            Timber.d("onCreate() Previewer started with edited model and template index, displaying blank to preview formatting");
-            mCurrentCard = getDummyCard(mEditedModel, mIndex);
-            if (mCurrentCard == null) {
-                UIUtils.showSimpleSnackbar(this, R.string.invalid_template, false);
-                finishWithoutAnimation();
-                return;
-            }
-        }
 
         if (mCurrentCard == null && (mCardList == null || mCardList.length == 0 || mIndex < 0 || mIndex > mCardList.length - 1)) {
             Timber.e("Previewer started with empty card list or invalid index");
@@ -91,7 +65,6 @@ public class Previewer extends AbstractFlashcardViewer {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putLongArray("cardList", mCardList);
-        outState.putString(CardTemplateEditor.INTENT_MODEL_FILENAME, mEditedModelFileName);
         outState.putInt("index", mIndex);
         super.onSaveInstanceState(outState);
     }
@@ -101,7 +74,7 @@ public class Previewer extends AbstractFlashcardViewer {
     protected void onCollectionLoaded(Collection col) {
         super.onCollectionLoaded(col);
         if (mCurrentCard == null) {
-            mCurrentCard = new PreviewerCard(col, mCardList[mIndex]);
+            mCurrentCard = new Card(col, mCardList[mIndex]);
         }
         displayCardQuestion();
         showBackIcon();
@@ -155,7 +128,7 @@ public class Previewer extends AbstractFlashcardViewer {
                 if (view.getId() == R.id.flashcard_layout_ease2) {
                     // ...but if they clicked "forward" we need to move to the next card first
                     mIndex++;
-                    mCurrentCard = new PreviewerCard(getCol(), mCardList[mIndex]);
+                    mCurrentCard = getCard(getCol(), mCardList[mIndex]);
                 }
                 displayCardQuestion();
             } else {
@@ -163,12 +136,16 @@ public class Previewer extends AbstractFlashcardViewer {
                 if (view.getId() == R.id.flashcard_layout_ease1) {
                     // ...but if they clicked "reverse" we need to go to the previous card first
                     mIndex--;
-                    mCurrentCard = new PreviewerCard(getCol(), mCardList[mIndex]);
+                    mCurrentCard = getCard(getCol(), mCardList[mIndex]);
                 }
                 displayCardAnswer();
             }
         }
     };
+
+    protected Card getCard(Collection col, long cardListIndex) {
+        return new Card(col, cardListIndex);
+    }
 
     private void updateButtonState() {
         // If we are in single-card mode, we show the "Show Answer" button on the question side
@@ -219,91 +196,6 @@ public class Previewer extends AbstractFlashcardViewer {
         } else {
             mEase2Layout.setEnabled(true);
             mNext2.setText(">");
-        }
-    }
-
-    /** Get a dummy card */
-    protected @Nullable Card getDummyCard(JSONObject model, int ordinal) {
-        Timber.d("getDummyCard() Creating dummy note for position %s", ordinal);
-        if (model == null) {
-            return null;
-        }
-        Note n = getCol().newNote(model);
-        ArrayList<String> fieldNames = Models.fieldNames(model);
-        for (int i = 0; i < fieldNames.size(); i++) {
-            n.setField(i, fieldNames.get(i));
-        }
-        try {
-            JSONObject template = (JSONObject)model.getJSONArray("tmpls").get(ordinal);
-            PreviewerCard card = (PreviewerCard)getCol()._newCard(new PreviewerCard(getCol()), n, template, 1, false);
-            card.setNote(n);
-            return card;
-        } catch (Exception e) {
-            Timber.e("getDummyCard() unable to create card");
-        }
-        return null;
-    }
-
-
-    /** Override certain aspects of Card behavior so we may display unsaved data */
-    public class PreviewerCard extends Card {
-
-        private Note mNote;
-
-
-        public PreviewerCard(Collection col) {
-            super(col);
-        }
-
-
-        public PreviewerCard(Collection col, long id) {
-            super(col, id);
-        }
-
-
-        @Override
-        /** if we have an unsaved note saved, use it instead of a collection lookup */
-        public Note note(boolean reload) {
-            if (mNote != null) {
-                return mNote;
-            }
-            return super.note(reload);
-        }
-
-
-        @Override
-        /** if we have an unsaved note saved, use it instead of a collection lookup */
-        public Note note() {
-            if (mNote != null) {
-                return mNote;
-            }
-            return super.note();
-        }
-
-
-        /** set an unsaved note to use for rendering */
-        public void setNote(Note note) {
-            mNote = note;
-        }
-
-
-        @Override
-        /** if we have an unsaved note, never return empty */
-        public boolean isEmpty() {
-            if (mNote != null) {
-                return false;
-            }
-            return super.isEmpty();
-        }
-
-
-        @Override
-        /** Override the method that fetches the model so we can render unsaved models */
-        public JSONObject model() {
-            if (mEditedModel != null) {
-                return mEditedModel;
-            }
-            return super.model();
         }
     }
 }

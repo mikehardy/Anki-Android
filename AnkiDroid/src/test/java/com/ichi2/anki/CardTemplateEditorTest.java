@@ -123,7 +123,7 @@ public class CardTemplateEditorTest extends RobolectricTest {
         shadowTestEditor.clickMenuItem(R.id.action_preview);
         Intent startedIntent = shadowTestEditor.getNextStartedActivity();
         ShadowIntent shadowIntent = Shadows.shadowOf(startedIntent);
-        Assert.assertEquals("Previewer not started?", Previewer.class.getName(), shadowIntent.getIntentClass().getName());
+        Assert.assertEquals("Previewer not started?", CardTemplatePreviewer.class.getName(), shadowIntent.getIntentClass().getName());
         Assert.assertNotNull("intent did not have model JSON filename?", startedIntent.getStringExtra(CardTemplateEditor.INTENT_MODEL_FILENAME));
         Assert.assertNotEquals("Model sent to Previewer is unchanged?", testEditor.getEditedModel(), CardTemplateEditor.getTempModel(startedIntent.getStringExtra(CardTemplateEditor.INTENT_MODEL_FILENAME)));
         Assert.assertEquals("Change already in database?", collectionBasicModelOriginal.toString().trim(), getCurrentDatabaseModelCopy(modelName).toString().trim());
@@ -273,7 +273,7 @@ public class CardTemplateEditorTest extends RobolectricTest {
         shadowTestEditor.clickMenuItem(R.id.action_preview);
         Intent startedIntent = shadowTestEditor.getNextStartedActivity();
         ShadowIntent shadowIntent = Shadows.shadowOf(startedIntent);
-        Assert.assertEquals("Previewer not started?", Previewer.class.getName(), shadowIntent.getIntentClass().getName());
+        Assert.assertEquals("Previewer not started?", CardTemplatePreviewer.class.getName(), shadowIntent.getIntentClass().getName());
         Assert.assertNotNull("intent did not have model JSON filename?", startedIntent.getStringExtra(CardTemplateEditor.INTENT_MODEL_FILENAME));
         Assert.assertEquals("intent did not have ordinal?", startedIntent.getIntExtra("index", -1), 0);
         Assert.assertNotEquals("Model sent to Previewer is unchanged?", testEditor.getEditedModel(), CardTemplateEditor.getTempModel(startedIntent.getStringExtra(CardTemplateEditor.INTENT_MODEL_FILENAME)));

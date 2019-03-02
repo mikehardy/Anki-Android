@@ -482,8 +482,8 @@ public class CardTemplateEditor extends AnkiActivity {
                 }
                 case R.id.action_preview: {
                     Timber.i("CardTemplateEditor:: Preview model button pressed");
-                    // Create intent for the previewer and add some arguments
-                    Intent i = new Intent(templateEditor, Previewer.class);
+                    // Create intent for the card template previewer and add some arguments
+                    Intent i = new Intent(templateEditor, CardTemplatePreviewer.class);
                     int pos = getArguments().getInt("position");
                     if (getArguments().getLong("noteId") != -1L && pos <
                             col.getNote(getArguments().getLong("noteId")).cards().size()) {

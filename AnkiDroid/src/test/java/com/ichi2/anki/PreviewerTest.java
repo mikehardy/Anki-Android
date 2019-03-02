@@ -50,29 +50,29 @@ public class PreviewerTest extends RobolectricTest {
         intent.putExtra(CardTemplateEditor.INTENT_MODEL_FILENAME, tempModelPath);
         intent.putExtra("index", 0);
 
-        ActivityController previewerController = Robolectric.buildActivity(TestPreviewer.class, intent).create().start().resume().visible();
-        TestPreviewer testPreviewer = (TestPreviewer) previewerController.get();
+        ActivityController previewerController = Robolectric.buildActivity(TestCardTemplatePreviewer.class, intent).create().start().resume().visible();
+        TestCardTemplatePreviewer testCardTemplatePreviewer = (TestCardTemplatePreviewer) previewerController.get();
         Assert.assertTrue("model change did not show up?",
-                testPreviewer.getDummyCard(collectionBasicModelOriginal, 0).q().contains("PREVIEWER_TEST") &&
-                        testPreviewer.getDummyCard(collectionBasicModelOriginal, 0).a().contains("PREVIEWER_TEST"));
+                testCardTemplatePreviewer.getDummyCard(collectionBasicModelOriginal, 0).q().contains("PREVIEWER_TEST") &&
+                        testCardTemplatePreviewer.getDummyCard(collectionBasicModelOriginal, 0).a().contains("PREVIEWER_TEST"));
 
         // Take it through a destroy/re-create lifecycle in order to test instance state persistence
         Bundle outBundle = new Bundle();
         previewerController.saveInstanceState(outBundle);
         previewerController.pause().stop().destroy();
-        previewerController = Robolectric.buildActivity(TestPreviewer.class).create(outBundle).start().resume().visible();
-        testPreviewer = (TestPreviewer) previewerController.get();
+        previewerController = Robolectric.buildActivity(TestCardTemplatePreviewer.class).create(outBundle).start().resume().visible();
+        testCardTemplatePreviewer = (TestCardTemplatePreviewer) previewerController.get();
         Assert.assertTrue("model change not preserved in lifecycle??",
-                testPreviewer.getDummyCard(collectionBasicModelOriginal, 0).q().contains("PREVIEWER_TEST") &&
-                        testPreviewer.getDummyCard(collectionBasicModelOriginal, 0).a().contains("PREVIEWER_TEST"));
+                testCardTemplatePreviewer.getDummyCard(collectionBasicModelOriginal, 0).q().contains("PREVIEWER_TEST") &&
+                        testCardTemplatePreviewer.getDummyCard(collectionBasicModelOriginal, 0).a().contains("PREVIEWER_TEST"));
 
 
         // Make sure we can click
-        Assert.assertFalse("Showing the answer already?", testPreviewer.getShowingAnswer());
-        testPreviewer.disableDoubleClickPrevention();
-        LinearLayout showAnswerButton = testPreviewer.findViewById(R.id.flashcard_layout_flip);
+        Assert.assertFalse("Showing the answer already?", testCardTemplatePreviewer.getShowingAnswer());
+        testCardTemplatePreviewer.disableDoubleClickPrevention();
+        LinearLayout showAnswerButton = testCardTemplatePreviewer.findViewById(R.id.flashcard_layout_flip);
         showAnswerButton.performClick();
-        Assert.assertTrue("Not showing the answer?", testPreviewer.getShowingAnswer());
+        Assert.assertTrue("Not showing the answer?", testCardTemplatePreviewer.getShowingAnswer());
     }
 
     @Test

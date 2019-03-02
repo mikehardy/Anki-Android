@@ -18,5 +18,8 @@
         <activity
             android:name="com.ichi2.anki.TestPreviewer">
         </activity>
+        <activity
+            android:name="com.ichi2.anki.TestCardTemplatePreviewer">
+        </activity>
     </application>
 </manifest>

@@ -265,6 +265,11 @@
             android:name="com.ichi2.anki.Previewer"
             android:configChanges="locale"
             android:label="@string/preview_title" />
+        <activity
+            android:exported="false"
+            android:name="com.ichi2.anki.CardTemplatePreviewer"
+            android:configChanges="locale"
+            android:label="@string/preview_title" />
 
         <!-- small widget -->
         <receiver
