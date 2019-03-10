@@ -70,8 +70,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 import com.ichi2.anim.ActivityTransitionAnimation;
 import com.ichi2.anki.CollectionHelper.CollectionIntegrityStorageCheck;
 import com.ichi2.anki.StudyOptionsFragment.StudyOptionsListener;
@@ -172,7 +172,7 @@ public class DeckPicker extends NavigationDrawerActivity implements
     private RecyclerView mRecyclerView;
     private LinearLayoutManager mRecyclerViewLayoutManager;
     private DeckAdapter mDeckListAdapter;
-    private FloatingActionsMenu mActionsMenu;
+    private SpeedDialView mActionsMenu;
     private Snackbar.Callback mSnackbarShowHideCallback = new Snackbar.Callback();
 
     private SwipeRefreshLayout mPullToSyncWrapper;
@@ -232,9 +232,11 @@ public class DeckPicker extends NavigationDrawerActivity implements
         public void onClick(View v) {
             long deckId = (long) v.getTag();
             Timber.i("DeckPicker:: Selected deck with id %d", deckId);
-            if (mActionsMenu != null && mActionsMenu.isExpanded()) {
-                mActionsMenu.collapse();
+
+            if (mActionsMenu != null && mActionsMenu.isOpen()) {
+                mActionsMenu.close();
             }
+
             handleDeckSelection(deckId, false);
             if (mFragmented || !CompatHelper.isLollipop()) {
                 // Calling notifyDataSetChanged() will update the color of the selected deck.
@@ -249,9 +251,11 @@ public class DeckPicker extends NavigationDrawerActivity implements
         public void onClick(View v) {
             long deckId = (long) v.getTag();
             Timber.i("DeckPicker:: Selected deck with id %d", deckId);
-            if (mActionsMenu != null && mActionsMenu.isExpanded()) {
-                mActionsMenu.collapse();
+
+            if (mActionsMenu != null && mActionsMenu.isOpen()) {
+                mActionsMenu.close();
             }
+
             handleDeckSelection(deckId, true);
             if (mFragmented || !CompatHelper.isLollipop()) {
                 // Calling notifyDataSetChanged() will update the color of the selected deck.
@@ -439,9 +443,9 @@ public class DeckPicker extends NavigationDrawerActivity implements
         mPullToSyncWrapper.getViewTreeObserver().addOnScrollChangedListener(() ->
                 mPullToSyncWrapper.setEnabled(mRecyclerViewLayoutManager.findFirstCompletelyVisibleItemPosition() == 0));
 
-        // Setup the FloatingActionButtons, should work everywhere with min API >= 15
+        // Setup the FloatingActionButtons, should work everywhere with min API >= 14
         mActionsMenu = findViewById(R.id.add_content_menu);
-        mActionsMenu.findViewById(R.id.fab_expand_menu_button).setContentDescription(getString(R.string.menu_add));
+        //mActionsMenu.findViewById(R.id.fab_expand_menu_button).setContentDescription(getString(R.string.menu_add));
         configureFloatingActionsMenu();
 
         mReviewSummaryTextView = (TextView) findViewById(R.id.today_stats_text_view);
@@ -542,42 +546,26 @@ public class DeckPicker extends NavigationDrawerActivity implements
     }
 
     private void configureFloatingActionsMenu() {
-        final FloatingActionButton addDeckButton = findViewById(R.id.add_deck_action);
-        final FloatingActionButton addSharedButton = findViewById(R.id.add_shared_action);
-        final FloatingActionButton addNoteButton = findViewById(R.id.add_note_action);
-        addDeckButton.setOnClickListener(view -> {
-            if (mActionsMenu == null) {
-                return;
+        mActionsMenu.addActionItem(
+                new SpeedDialActionItem.Builder(R.id.add_deck_action, R.drawable.ic_folder_white)
+                .create()
+        );
+
+        mActionsMenu.setOnActionSelectedListener((SpeedDialActionItem speedDialActionItem) -> {
+            switch (speedDialActionItem.getId()) {
+                case R.id.add_deck_action:
+                    addDeck();
+                    break;
+                case R.id.add_shared_action:
+                    addSharedDeck();
+                    break;
+                case R.id.add_note_action:
+                    addNote();
+                    break;
             }
-            mActionsMenu.collapse();
-            mDialogEditText = new EditText(DeckPicker.this);
-            mDialogEditText.setSingleLine(true);
-            // mDialogEditText.setFilters(new InputFilter[] { mDeckNameFilter });
-            new MaterialDialog.Builder(DeckPicker.this)
-                    .title(R.string.new_deck)
-                    .positiveText(R.string.dialog_ok)
-                    .customView(mDialogEditText, true)
-                    .onPositive((dialog, which) -> {
-                        String deckName = mDialogEditText.getText().toString();
-                        if (Decks.isValidDeckName(deckName)) {
-                            createNewDeck(deckName);
-                        } else {
-                            Timber.i("configureFloatingActionsMenu::addDeckButton::onPositiveListener - Not creating invalid deck name '%s'", deckName);
-                            UIUtils.showThemedToast(this, getString(R.string.invalid_deck_name), false);
-                        }
-                    })
-                    .negativeText(R.string.dialog_cancel)
-                    .show();
-        });
-        addSharedButton.setOnClickListener(view -> {
-            Timber.i("Adding Shared Deck");
-            mActionsMenu.collapse();
-            addSharedDeck();
-        });
-        addNoteButton.setOnClickListener(view -> {
-            Timber.i("Adding Note");
-            mActionsMenu.collapse();
-            addNote();
+
+            // return true to keep the Speed Dial open, false to close.
+            return false;
         });
     }
 
@@ -588,6 +576,39 @@ public class DeckPicker extends NavigationDrawerActivity implements
         updateDeckList();
     }
 
+
+    private void addDeck() {
+        mDialogEditText = new EditText(DeckPicker.this);
+        mDialogEditText.setSingleLine(true);
+        // mDialogEditText.setFilters(new InputFilter[] { mDeckNameFilter });
+        new MaterialDialog.Builder(DeckPicker.this)
+                .title(R.string.new_deck)
+                .positiveText(R.string.dialog_ok)
+                .customView(mDialogEditText, true)
+                .onPositive((dialog, which) -> {
+                    String deckName = mDialogEditText.getText().toString();
+                    if (Decks.isValidDeckName(deckName)) {
+                        createNewDeck(deckName);
+                    } else {
+                        Timber.i("configureFloatingActionsMenu::addDeckButton::onPositiveListener - Not creating invalid deck name '%s'", deckName);
+                        UIUtils.showThemedToast(this, getString(R.string.invalid_deck_name), false);
+                    }
+                })
+                .negativeText(R.string.dialog_cancel)
+                .show();
+    }
+
+
+    public void addNote() {
+        Intent intent = new Intent(DeckPicker.this, NoteEditor.class);
+        intent.putExtra(NoteEditor.EXTRA_CALLER, NoteEditor.CALLER_DECKPICKER);
+        startActivityForResultWithAnimation(intent, ADD_NOTE, ActivityTransitionAnimation.LEFT);
+    }
+
+
+    public void addSharedDeck() {
+        openUrl(Uri.parse(getResources().getString(R.string.shared_decks_url)));
+    }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
@@ -911,8 +932,8 @@ public class DeckPicker extends NavigationDrawerActivity implements
             super.onBackPressed();
         } else {
             Timber.i("Back key pressed");
-            if (mActionsMenu != null && mActionsMenu.isExpanded()) {
-                mActionsMenu.collapse();
+            if (mActionsMenu != null && mActionsMenu.isOpen()) {
+                mActionsMenu.close();
             } else {
                 automaticSync();
                 finishWithAnimation();
@@ -995,13 +1016,6 @@ public class DeckPicker extends NavigationDrawerActivity implements
     private void showCollectionErrorDialog() {
         getDialogHandler().sendEmptyMessage(DialogHandler.MSG_SHOW_COLLECTION_LOADING_ERROR_DIALOG);
     }
-
-    public void addNote() {
-        Intent intent = new Intent(DeckPicker.this, NoteEditor.class);
-        intent.putExtra(NoteEditor.EXTRA_CALLER, NoteEditor.CALLER_DECKPICKER);
-        startActivityForResultWithAnimation(intent, ADD_NOTE, ActivityTransitionAnimation.LEFT);
-    }
-
 
     private void showStartupScreensAndDialogs(SharedPreferences preferences, int skip) {
 
@@ -2017,11 +2031,6 @@ public class DeckPicker extends NavigationDrawerActivity implements
             iFilter.addAction(SdCardReceiver.MEDIA_MOUNT);
             registerReceiver(mUnmountReceiver, iFilter);
         }
-    }
-
-
-    public void addSharedDeck() {
-        openUrl(Uri.parse(getResources().getString(R.string.shared_decks_url)));
     }
 
 

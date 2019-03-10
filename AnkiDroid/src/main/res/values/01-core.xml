@@ -60,6 +60,10 @@
         <item quantity="other">Studied %1$d cards in %2$s today</item>
     </plurals>
 
+    <!-- Resource IDs for the floating action button speed dial. -->
+    <item name="add_deck_action" type="id" />
+    <item name="add_shared_action" type="id" />
+    <item name="add_note_action" type="id" />
 
     <!-- flashcard_portrait.xml -->
     <string name="type_answer_hint">Type answer</string>

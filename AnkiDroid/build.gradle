@@ -223,7 +223,7 @@ dependencies {
     implementation 'androidx.viewpager2:viewpager2:1.0.0'
     implementation 'io.requery:sqlite-android:3.31.0'
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
-    implementation 'com.getbase:floatingactionbutton:1.10.1'
+    implementation "com.leinardi.android:speed-dial:2.0.1"
     implementation 'org.bitbucket.cowwoc:diff-match-patch:1.2'
     // #6419  - API 27 (& maybe others) could not perform new ZipFile() on a 2GB+ apkg
     // noinspection GradleDependency - pinned at 1.12 until API21 minSdkVersion (File.toPath usage)
