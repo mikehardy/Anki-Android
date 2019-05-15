@@ -22,6 +22,7 @@ package com.ichi2.libanki;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.util.Pair;
+import androidx.annotation.Nullable;
 
 import com.ichi2.anki.exception.ConfirmModSchemaException;
 import org.json.JSONArray;
@@ -39,8 +40,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 @SuppressWarnings({"PMD.ExcessiveClassLength", "PMD.AvoidThrowingRawExceptionTypes","PMD.AvoidReassigningParameters",
         "PMD.NPathComplexity","PMD.MethodNamingConventions",

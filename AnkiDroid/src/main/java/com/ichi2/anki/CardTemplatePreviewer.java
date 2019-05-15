@@ -17,6 +17,7 @@
 package com.ichi2.anki;
 
 import android.os.Bundle;
+import androidx.annotation.Nullable;
 
 import com.ichi2.libanki.Card;
 import com.ichi2.libanki.Collection;
@@ -26,8 +27,6 @@ import com.ichi2.libanki.Note;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-
-import javax.annotation.Nullable;
 
 import timber.log.Timber;
 
