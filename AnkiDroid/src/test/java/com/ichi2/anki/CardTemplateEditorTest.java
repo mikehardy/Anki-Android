@@ -28,9 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
-import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
-import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowIntent;
@@ -51,6 +49,8 @@ import static org.robolectric.Shadows.shadowOf;
 @RunWith(AndroidJUnit4.class)
 @LooperMode(LooperMode.Mode.PAUSED)
 public class CardTemplateEditorTest extends RobolectricTest {
+
+    private static int robolectricQuiesceMillis = 200;
 
     @Test
     public void testTempModelStorage() throws Exception {
@@ -89,6 +89,8 @@ public class CardTemplateEditorTest extends RobolectricTest {
         EditText templateFront = testEditor.findViewById(R.id.front_edit);
         String TEST_MODEL_QFMT_EDIT = "!@#$%^&*TEST*&^%$#@!";
         templateFront.getText().append(TEST_MODEL_QFMT_EDIT);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
+        shadowOf(getMainLooper()).idle();
         Assert.assertTrue("Model did not change after edit?", testEditor.modelHasChanged());
         Assert.assertEquals("Change already in database?", collectionBasicModelOriginal.toString().trim(), getCurrentDatabaseModelCopy(modelName).toString().trim());
 
@@ -104,14 +106,20 @@ public class CardTemplateEditorTest extends RobolectricTest {
 
         // Make sure we get a confirmation dialog if we hit the back button
         shadowTestEditor.clickMenuItem(android.R.id.home);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
+        shadowOf(getMainLooper()).idle();
         Assert.assertEquals("Wrong dialog shown?", getDialogText(), getResourceString(R.string.discard_unsaved_changes));
         clickDialogButton(DialogAction.NEGATIVE);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
+        shadowOf(getMainLooper()).idle();
         Assert.assertTrue("model change not preserved despite canceling back button?", testEditor.modelHasChanged());
 
         // Make sure we things are cleared out after a cancel
         shadowTestEditor.clickMenuItem(android.R.id.home);
         Assert.assertEquals("Wrong dialog shown?", getDialogText(), getResourceString(R.string.discard_unsaved_changes));
         clickDialogButton(DialogAction.POSITIVE);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
+        shadowOf(getMainLooper()).idle();
         Assert.assertFalse("model change not cleared despite discarding changes?", testEditor.modelHasChanged());
 
         // Get going for content edit assertions again...
@@ -120,10 +128,14 @@ public class CardTemplateEditorTest extends RobolectricTest {
         shadowTestEditor = shadowOf(testEditor);
         templateFront = testEditor.findViewById(R.id.front_edit);
         templateFront.getText().append(TEST_MODEL_QFMT_EDIT);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
+        shadowOf(getMainLooper()).idle();
         Assert.assertTrue("Model did not change after edit?", testEditor.modelHasChanged());
 
         // Make sure we pass the edit to the Previewer
         shadowTestEditor.clickMenuItem(R.id.action_preview);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
+        shadowOf(getMainLooper()).idle();
         Intent startedIntent = shadowTestEditor.getNextStartedActivity();
         ShadowIntent shadowIntent = shadowOf(startedIntent);
         Assert.assertEquals("Previewer not started?", CardTemplatePreviewer.class.getName(), shadowIntent.getIntentClass().getName());
@@ -135,6 +147,7 @@ public class CardTemplateEditorTest extends RobolectricTest {
         // Save the template then fetch it from the collection to see if it was saved correctly
         JSONObject testEditorModelEdited = testEditor.getEditedModel();
         shadowTestEditor.clickMenuItem(R.id.action_confirm);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
         shadowOf(getMainLooper()).idle();
         JSONObject collectionBasicModelCopyEdited = getCurrentDatabaseModelCopy(modelName);
         Assert.assertNotEquals("model is unchanged?", collectionBasicModelOriginal, collectionBasicModelCopyEdited);
@@ -221,14 +234,17 @@ public class CardTemplateEditorTest extends RobolectricTest {
         // Try to delete the template - click delete, click confirm for card delete, click confirm again for full sync
         ShadowActivity shadowTestEditor = shadowOf(testEditor);
         shadowTestEditor.clickMenuItem(R.id.action_delete);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
         shadowOf(getMainLooper()).idle();
         Assert.assertEquals("Wrong dialog shown?", "Delete the “Card 1” card type, and its 0 cards?", getDialogText());
         clickDialogButton(DialogAction.POSITIVE);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
         shadowOf(getMainLooper()).idle();
         Assert.assertTrue("Model should have changed", testEditor.modelHasChanged());
 
         // Try to delete the template again, but there's only one so we should toast
         shadowTestEditor.clickMenuItem(R.id.action_delete);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
         shadowOf(getMainLooper()).idle();
         Assert.assertEquals("Did not show toast about deleting only card?",
                 getResourceString(R.string.card_template_editor_cant_delete),
@@ -251,6 +267,7 @@ public class CardTemplateEditorTest extends RobolectricTest {
         // Save the change to the database and make sure there's only one template after
         JSONObject testEditorModelEdited = testEditor.getEditedModel();
         shadowTestEditor.clickMenuItem(R.id.action_confirm);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
         shadowOf(getMainLooper()).idle();
         JSONObject collectionBasicModelCopyEdited = getCurrentDatabaseModelCopy(modelName);
         Assert.assertNotEquals("model is unchanged?", collectionBasicModelOriginal, collectionBasicModelCopyEdited);
@@ -272,6 +289,7 @@ public class CardTemplateEditorTest extends RobolectricTest {
         // Try to add a template - click add, click confirm for card add, click confirm again for full sync
         ShadowActivity shadowTestEditor = shadowOf(testEditor);
         shadowTestEditor.clickMenuItem(R.id.action_add);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
         shadowOf(getMainLooper()).idle();
         // TODO never existed in AnkiDroid but to match AnkiDesktop we should pop a dialog to confirm card create
         //Assert.assertEquals("Wrong dialog shown?", "This will create NN cards. Proceed?", getDialogText());
@@ -291,6 +309,7 @@ public class CardTemplateEditorTest extends RobolectricTest {
         // Save the change to the database and make sure there are two templates after
         JSONObject testEditorModelEdited = testEditor.getEditedModel();
         shadowTestEditor.clickMenuItem(R.id.action_confirm);
+        try { Thread.sleep(robolectricQuiesceMillis); } catch (Exception e) { Timber.e(e); }
         shadowOf(getMainLooper()).idle();
         JSONObject collectionBasicModelCopyEdited = getCurrentDatabaseModelCopy(modelName);
         Assert.assertNotEquals("model is unchanged?", collectionBasicModelOriginal, collectionBasicModelCopyEdited);
