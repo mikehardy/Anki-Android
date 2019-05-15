@@ -31,6 +31,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.Shadows;
 import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.LooperMode;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowToast;
@@ -46,7 +47,7 @@ import static com.ichi2.anki.CardTemplateEditor.ChangeType.DELETE;
 
 
 @RunWith(AndroidJUnit4.class)
-@Config(shadows = { ShadowViewPager.class })
+@LooperMode(LooperMode.Mode.PAUSED)
 public class CardTemplateEditorTest extends RobolectricTest {
 
     @Test
