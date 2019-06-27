@@ -174,7 +174,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.0.0'
     implementation 'io.requery:sqlite-android:3.28.0'
     implementation 'android.arch.persistence:db-framework:1.1.1'
-    implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+    implementation 'com.afollestad.material-dialogs:core:3.0.1'
     implementation 'com.getbase:floatingactionbutton:1.10.1'
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'org.bitbucket.cowwoc:diff-match-patch:1.2'
