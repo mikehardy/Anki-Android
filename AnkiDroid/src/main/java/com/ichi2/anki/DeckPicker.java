@@ -70,6 +70,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.ichi2.themes.Themes;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 import com.ichi2.anim.ActivityTransitionAnimation;
@@ -548,7 +549,13 @@ public class DeckPicker extends NavigationDrawerActivity implements
     private void configureFloatingActionsMenu() {
         mActionsMenu.addActionItem(
                 new SpeedDialActionItem.Builder(R.id.add_deck_action, R.drawable.ic_folder_white)
-                .create()
+                    .setFabBackgroundColor(Themes.getColorFromAttr(getApplicationContext(), R.attr.fab_background))
+                    .setFabImageTintColor(Themes.getColorFromAttr(getApplicationContext(), R.attr.fab_background))
+                    .setLabel(R.string.new_deck)
+                    .setLabelColor(Themes.getColorFromAttr(getApplicationContext(), R.attr.fab_labelsTextColor))
+                    .setLabelBackgroundColor(Themes.getColorFromAttr(getApplicationContext(), R.attr.fab_item_background))
+                    .setLabelClickable(true)
+                    .create()
         );
 
         mActionsMenu.setOnActionSelectedListener((SpeedDialActionItem speedDialActionItem) -> {
