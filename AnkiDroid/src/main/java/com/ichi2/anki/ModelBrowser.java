@@ -41,6 +41,7 @@ import android.widget.Toast;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.ichi2.anim.ActivityTransitionAnimation;
 import com.ichi2.anki.dialogs.ConfirmationDialog;
+import com.ichi2.anki.dialogs.MaterialDialogSingleItemCallback;
 import com.ichi2.anki.dialogs.ModelBrowserContextMenu;
 import com.ichi2.anki.exception.ConfirmModSchemaException;
 import com.ichi2.async.CollectionTask;
@@ -54,6 +55,7 @@ import com.ichi2.utils.JSONObject;
 import java.util.ArrayList;
 import java.util.Random;
 
+import kotlin.Unit;
 import timber.log.Timber;
 
 
@@ -144,20 +146,17 @@ public class ModelBrowser extends AnkiActivity {
     /*
      * Listens to long hold context menu for main list items
      */
-    private MaterialDialog.ListCallback mContextMenuListener = new MaterialDialog.ListCallback() {
-        @Override
-        public void onSelection(MaterialDialog materialDialog, View view, int selection, CharSequence charSequence) {
-            switch (selection) {
-                case ModelBrowserContextMenu.MODEL_DELETE:
-                    deleteModelDialog();
-                    break;
-                case ModelBrowserContextMenu.MODEL_RENAME:
-                    renameModelDialog();
-                    break;
-                case ModelBrowserContextMenu.MODEL_TEMPLATE:
-                    openTemplateEditor();
-                    break;
-            }
+    private MaterialDialogSingleItemCallback mContextMenuListener = index -> {
+        switch (index) {
+            case ModelBrowserContextMenu.MODEL_DELETE:
+                deleteModelDialog();
+                break;
+            case ModelBrowserContextMenu.MODEL_RENAME:
+                renameModelDialog();
+                break;
+            case ModelBrowserContextMenu.MODEL_TEMPLATE:
+                openTemplateEditor();
+                break;
         }
     };
 
@@ -322,41 +321,41 @@ public class ModelBrowser extends AnkiActivity {
 
         addSelectionSpinner.setAdapter(mNewModelAdapter);
 
-        new MaterialDialog.Builder(this)
-                .title(R.string.model_browser_add)
-                .positiveText(R.string.dialog_ok)
-                .customView(addSelectionSpinner, true)
-                .onPositive((dialog, which) -> {
-                        mModelNameInput = new EditText(ModelBrowser.this);
-                        mModelNameInput.setSingleLine();
-                        final boolean isStdModel = addSelectionSpinner.getSelectedItemPosition() < numStdModels;
-                        // Try to find a unique model name. Add "clone" if cloning, and random digits if necessary.
-                        String suggestedName = mNewModelNames.get(addSelectionSpinner.getSelectedItemPosition());
-                        if (!isStdModel) {
-                            suggestedName += " " + getResources().getString(R.string.model_clone_suffix);
-                        }
+        new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                .title(R.string.model_browser_add, null)
+                // FIXME .customView(addSelectionSpinner, true)
+                .positiveButton(R.string.dialog_ok, null, (dialog) -> {
+                            mModelNameInput = new EditText(ModelBrowser.this);
+                            mModelNameInput.setSingleLine();
+                            final boolean isStdModel = addSelectionSpinner.getSelectedItemPosition() < numStdModels;
+                            // Try to find a unique model name. Add "clone" if cloning, and random digits if necessary.
+                            String suggestedName = mNewModelNames.get(addSelectionSpinner.getSelectedItemPosition());
+                            if (!isStdModel) {
+                                suggestedName += " " + getResources().getString(R.string.model_clone_suffix);
+                            }
 
-                        if (existingModelsNames.contains(suggestedName)) {
-                            suggestedName = randomizeName(suggestedName);
-                        }
-                        mModelNameInput.setText(suggestedName);
-                        mModelNameInput.setSelection(mModelNameInput.getText().length());
+                            if (existingModelsNames.contains(suggestedName)) {
+                                suggestedName = randomizeName(suggestedName);
+                            }
+                            mModelNameInput.setText(suggestedName);
+                            mModelNameInput.setSelection(mModelNameInput.getText().length());
 
-                        //Create textbox to name new model
-                        new MaterialDialog.Builder(ModelBrowser.this)
-                                .title(R.string.model_browser_add)
-                                .positiveText(R.string.dialog_ok)
-                                .customView(mModelNameInput, true)
-                                .onPositive((innerDialog, innerWhich) -> {
-                                        String modelName = mModelNameInput.getText().toString();
-                                        addNewNoteType(modelName, addSelectionSpinner.getSelectedItemPosition());
-                                    }
-                                )
-                                .negativeText(R.string.dialog_cancel)
-                                .show();
-                    }
+                            //Create textbox to name new model
+                            new MaterialDialog(ModelBrowser.this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                                    .title(R.string.model_browser_add, null)
+                                    // FIXME .customView(mModelNameInput, true)
+                                    .positiveButton(R.string.dialog_ok, null, (innerDialog) -> {
+                                                String modelName = mModelNameInput.getText().toString();
+                                                addNewNoteType(modelName, addSelectionSpinner.getSelectedItemPosition());
+                                                return Unit.INSTANCE;
+                                            }
+                                    )
+                                    .negativeButton(R.string.dialog_cancel, null, null)
+                                    .show();
+                            return Unit.INSTANCE;
+                        }
                 )
-                .negativeText(R.string.dialog_cancel)
+                .negativeButton(R.string.dialog_cancel, null, null)
                 .show();
     }
 
@@ -442,12 +441,11 @@ public class ModelBrowser extends AnkiActivity {
         mModelNameInput.setSingleLine(true);
         mModelNameInput.setText(mModels.get(mModelListPosition).getString("name"));
         mModelNameInput.setSelection(mModelNameInput.getText().length());
-        new MaterialDialog.Builder(this)
-                            .title(R.string.rename_model)
-                            .positiveText(R.string.rename)
-                            .negativeText(R.string.dialog_cancel)
-                            .customView(mModelNameInput, true)
-                            .onPositive((dialog, which) -> {
+        new MaterialDialog(this, null)
+                            .title(R.string.rename_model, null)
+                            .negativeButton(R.string.dialog_cancel, null, null)
+                            // FIXME .customView(mModelNameInput, true)
+                            .positiveButton(R.string.rename, null, (dialog) -> {
                                     JSONObject model = mModels.get(mModelListPosition);
                                     String deckName = mModelNameInput.getText().toString()
                                             // Anki desktop doesn't allow double quote characters in deck names
@@ -464,6 +462,7 @@ public class ModelBrowser extends AnkiActivity {
                                     } else {
                                         showToast(getResources().getString(R.string.toast_empty_name));
                                     }
+                                    return Unit.INSTANCE;
                                 })
                             .show();
     }

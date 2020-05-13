@@ -33,6 +33,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -80,7 +81,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.afollestad.materialdialogs.util.TypefaceHelper;
 import com.ichi2.anim.ActivityTransitionAnimation;
 import com.ichi2.anim.ViewAnimation;
 import com.ichi2.anki.cardviewer.CardAppearance;
@@ -128,6 +128,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import kotlin.Unit;
 import timber.log.Timber;
 
 import static com.ichi2.anki.cardviewer.CardAppearance.calculateDynamicFontSize;
@@ -172,6 +173,9 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity i
     private boolean mReplayOnTtsInit = false;
 
     protected static final int MENU_DISABLED = 3;
+
+    private static Typeface sRobotoMedium;
+    private static Typeface sRobotoRegular;
 
 
     /**
@@ -1236,19 +1240,19 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity i
 
     protected void showDeleteNoteDialog() {
         Resources res = getResources();
-        new MaterialDialog.Builder(this)
-                .title(res.getString(R.string.delete_card_title))
-                .iconAttr(R.attr.dialogErrorIcon)
-                .content(String.format(res.getString(R.string.delete_note_message),
-                        Utils.stripHTML(mCurrentCard.q(true))))
-                .positiveText(res.getString(R.string.dialog_positive_delete))
-                .negativeText(res.getString(R.string.dialog_cancel))
-                .onPositive((dialog, which) -> {
+        new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                .title(R.string.delete_card_title, null)
+                .icon(R.attr.dialogErrorIcon, null)
+                .message(null, String.format(res.getString(R.string.delete_note_message),
+                        Utils.stripHTML(mCurrentCard.q(true))), null)
+                .negativeButton(R.string.dialog_cancel, null, null)
+                .positiveButton(R.string.dialog_positive_delete, null, (dialog) -> {
                     Timber.i("AbstractFlashcardViewer:: OK button pressed to delete note %d", mCurrentCard.getNid());
                     mSoundPlayer.stopSounds();
                     dismiss(Collection.DismissType.DELETE_NOTE);
+                    return Unit.INSTANCE;
                 })
-                .build().show();
+                .show();
     }
 
 
@@ -1344,23 +1348,28 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity i
         // Initialize swipe
         gestureDetector = new GestureDetectorCompat(this, new MyGestureDetector());
 
+        if (sRobotoMedium == null) {
+            sRobotoMedium = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Medium");
+            sRobotoRegular = Typeface.createFromAsset(getAssets(), "fonts/Roboto-Regular");
+        }
+
         mEase1 = (TextView) findViewById(R.id.ease1);
-        mEase1.setTypeface(TypefaceHelper.get(this, "Roboto-Medium"));
+        mEase1.setTypeface(sRobotoMedium);
         mEase1Layout = (LinearLayout) findViewById(R.id.flashcard_layout_ease1);
         mEase1Layout.setOnClickListener(mSelectEaseHandler);
 
         mEase2 = (TextView) findViewById(R.id.ease2);
-        mEase2.setTypeface(TypefaceHelper.get(this, "Roboto-Medium"));
+        mEase2.setTypeface(sRobotoMedium);
         mEase2Layout = (LinearLayout) findViewById(R.id.flashcard_layout_ease2);
         mEase2Layout.setOnClickListener(mSelectEaseHandler);
 
         mEase3 = (TextView) findViewById(R.id.ease3);
-        mEase3.setTypeface(TypefaceHelper.get(this, "Roboto-Medium"));
+        mEase3.setTypeface(sRobotoMedium);
         mEase3Layout = (LinearLayout) findViewById(R.id.flashcard_layout_ease3);
         mEase3Layout.setOnClickListener(mSelectEaseHandler);
 
         mEase4 = (TextView) findViewById(R.id.ease4);
-        mEase4.setTypeface(TypefaceHelper.get(this, "Roboto-Medium"));
+        mEase4.setTypeface(sRobotoMedium);
         mEase4Layout = (LinearLayout) findViewById(R.id.flashcard_layout_ease4);
         mEase4Layout.setOnClickListener(mSelectEaseHandler);
 
@@ -1368,10 +1377,10 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity i
         mNext2 = (TextView) findViewById(R.id.nextTime2);
         mNext3 = (TextView) findViewById(R.id.nextTime3);
         mNext4 = (TextView) findViewById(R.id.nextTime4);
-        mNext1.setTypeface(TypefaceHelper.get(this, "Roboto-Regular"));
-        mNext2.setTypeface(TypefaceHelper.get(this, "Roboto-Regular"));
-        mNext3.setTypeface(TypefaceHelper.get(this, "Roboto-Regular"));
-        mNext4.setTypeface(TypefaceHelper.get(this, "Roboto-Regular"));
+        mNext1.setTypeface(sRobotoRegular);
+        mNext2.setTypeface(sRobotoRegular);
+        mNext3.setTypeface(sRobotoRegular);
+        mNext4.setTypeface(sRobotoRegular);
 
         if (!mShowNextReviewTime) {
             mNext1.setVisibility(View.GONE);
@@ -1381,7 +1390,7 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity i
         }
 
         Button mFlipCard = (Button) findViewById(R.id.flip_card);
-        mFlipCard.setTypeface(TypefaceHelper.get(this, "Roboto-Medium"));
+        mFlipCard.setTypeface(sRobotoMedium);
         mFlipCardLayout = (LinearLayout) findViewById(R.id.flashcard_layout_flip);
         mFlipCardLayout.setOnClickListener(mFlipCardListener);
 
@@ -3063,13 +3072,15 @@ public abstract class AbstractFlashcardViewer extends NavigationDrawerActivity i
             String errorDetails = detail.didCrash()
                     ? res.getString(R.string.webview_crash_unknwon_detailed)
                     : res.getString(R.string.webview_crash_oom_details);
-            new MaterialDialog.Builder(AbstractFlashcardViewer.this)
-                    .title(res.getString(R.string.webview_crash_loop_dialog_title))
-                    .content(res.getString(R.string.webview_crash_loop_dialog_content, cardInformation, errorDetails))
-                    .positiveText(R.string.dialog_ok)
+            new MaterialDialog(AbstractFlashcardViewer.this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                    .title(R.string.webview_crash_loop_dialog_title, null)
+                    .message(null, res.getString(R.string.webview_crash_loop_dialog_content, cardInformation, errorDetails), null)
                     .cancelable(false)
-                    .canceledOnTouchOutside(false)
-                    .onPositive((materialDialog, dialogAction) -> finishWithoutAnimation())
+                    .cancelOnTouchOutside(false)
+                    .positiveButton(R.string.dialog_ok, null, (materialDialog) -> {
+                        finishWithoutAnimation();
+                        return Unit.INSTANCE;
+                    })
                     .show();
         }
     }

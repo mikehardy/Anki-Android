@@ -42,7 +42,6 @@ import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.provider.Settings;
 
-import com.afollestad.materialdialogs.GravityEnum;
 import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.Nullable;
@@ -123,6 +122,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 
+import kotlin.Unit;
 import timber.log.Timber;
 
 public class DeckPicker extends NavigationDrawerActivity implements
@@ -295,7 +295,7 @@ public class DeckPicker extends NavigationDrawerActivity implements
 
         @Override
         public void onProgressUpdate(CollectionTask.TaskData... values) {
-            mProgressDialog.setContent(values[0].getString());
+            mProgressDialog.message(null, values[0].getString(), null);
         }
     };
 
@@ -333,7 +333,7 @@ public class DeckPicker extends NavigationDrawerActivity implements
 
         @Override
         public void onProgressUpdate(CollectionTask.TaskData... values) {
-            mProgressDialog.setContent(values[0].getString());
+            mProgressDialog.message(null, values[0].getString(), null);
         }
     };
 
@@ -506,18 +506,17 @@ public class DeckPicker extends NavigationDrawerActivity implements
         } else {
             Timber.i("Displaying initial permission request dialog");
             // Request storage permission if we don't have it (e.g. on Android 6.0+)
-            new MaterialDialog.Builder(this)
-                    .title(R.string.collection_load_welcome_request_permissions_title)
-                    .titleGravity(GravityEnum.CENTER)
-                    .content(R.string.collection_load_welcome_request_permissions_details)
-                    .positiveText(R.string.dialog_ok)
-                    .onPositive((innerDialog, innerWhich) -> {
+            new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                    .title(R.string.collection_load_welcome_request_permissions_title, null)
+                    .message(R.string.collection_load_welcome_request_permissions_details, null, null)
+                    .positiveButton(R.string.dialog_ok, null, (innerDialog) -> {
                         this.mClosedWelcomeMessage = true;
                         ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE},
                                 REQUEST_STORAGE_PERMISSION);
+                        return Unit.INSTANCE;
                     })
                     .cancelable(false)
-                    .canceledOnTouchOutside(false)
+                    .cancelOnTouchOutside(false)
                     .show();
             return false;
         }
@@ -535,17 +534,18 @@ public class DeckPicker extends NavigationDrawerActivity implements
             mDialogEditText = new EditText(DeckPicker.this);
             mDialogEditText.setSingleLine(true);
             // mDialogEditText.setFilters(new InputFilter[] { mDeckNameFilter });
-            new MaterialDialog.Builder(DeckPicker.this)
-                    .title(R.string.new_deck)
-                    .positiveText(R.string.dialog_ok)
-                    .customView(mDialogEditText, true)
-                    .onPositive((dialog, which) -> {
+            new MaterialDialog(DeckPicker.this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                    .title(R.string.new_deck, null)
+                    // FIXME
+//                    .customView(mDialogEditText, true)
+                    .positiveButton(R.string.dialog_ok, null, (dialog) -> {
                         String deckName = mDialogEditText.getText().toString();
                         Timber.i("DeckPicker:: Creating new deck...");
                         getCol().getDecks().id(deckName, true);
                         updateDeckList();
+                        return Unit.INSTANCE;
                     })
-                    .negativeText(R.string.dialog_cancel)
+                    .negativeButton(R.string.dialog_cancel, null, null)
                     .show();
         });
         addSharedButton.setOnClickListener(view -> {
@@ -627,17 +627,18 @@ public class DeckPicker extends NavigationDrawerActivity implements
                 }
                 mDialogEditText.setText(name);
                 // mDialogEditText.setFilters(new InputFilter[] { mDeckNameFilter });
-                new MaterialDialog.Builder(DeckPicker.this)
-                        .title(res.getString(R.string.new_deck))
-                        .customView(mDialogEditText, true)
-                        .positiveText(res.getString(R.string.create))
-                        .negativeText(res.getString(R.string.dialog_cancel))
-                        .onPositive((dialog, which) -> {
+                new MaterialDialog(DeckPicker.this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                        .title(R.string.new_deck, null)
+                        // FIXME
+//                        .customView(mDialogEditText, true)
+                        .positiveButton(R.string.create, null, (dialog) -> {
                             String filteredDeckName = mDialogEditText.getText().toString();
                             Timber.i("DeckPicker:: Creating filtered deck...");
                             getCol().getDecks().newDyn(filteredDeckName);
                             openStudyOptions(true);
+                            return Unit.INSTANCE;
                         })
+                        .negativeButton(R.string.dialog_cancel, null, null)
                         .show();
                 return true;
             }
@@ -1097,17 +1098,15 @@ public class DeckPicker extends NavigationDrawerActivity implements
                     Timber.i("showStartupScreensAndDialogs() running integrityCheck()");
                     //#5852 - since we may have a warning about disk space, we don't want to force a check database
                     //and show a warning before the user knows what is happening.
-                    new MaterialDialog.Builder(this)
-                            .title(R.string.integrity_check_startup_title)
-                            .content(R.string.integrity_check_startup_content)
-                            .positiveText(R.string.integrity_check_positive)
-                            .negativeText(R.string.close)
-                            .onPositive((materialDialog, dialogAction) -> integrityCheck())
-                            .onNeutral((materialDialog, dialogAction) -> restartActivity())
-                            .onNegative((materialDialog, dialogAction) ->  restartActivity())
-                            .canceledOnTouchOutside(false)
+                    new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                            .title(R.string.integrity_check_startup_title, null)
+                            .message(R.string.integrity_check_startup_content, null, null)
+                            .positiveButton(R.string.integrity_check_positive, null, (materialDialog) ->
+                                { integrityCheck(); return Unit.INSTANCE; })
+                            .negativeButton(R.string.close, null, (materialDialog) ->
+                                { restartActivity(); return Unit.INSTANCE; })
+                            .cancelOnTouchOutside(false)
                             .cancelable(false)
-                            .build()
                             .show();
 
                 } else if (previous < upgradePrefsVersion) {
@@ -1350,12 +1349,12 @@ public class DeckPicker extends NavigationDrawerActivity implements
         CollectionIntegrityStorageCheck status = CollectionIntegrityStorageCheck.createInstance(this);
         if (status.shouldWarnOnIntegrityCheck()) {
             Timber.d("Displaying File Size confirmation");
-            new MaterialDialog.Builder(this)
-                    .title(R.string.check_db_title)
-                    .content(status.getWarningDetails(this))
-                    .positiveText(R.string.integrity_check_continue_anyway)
-                    .onPositive((dialog, which) -> performIntegrityCheck())
-                    .negativeText(R.string.dialog_cancel)
+            new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                    .title(R.string.check_db_title, null)
+                    .message(null, status.getWarningDetails(this), null)
+                    .positiveButton(R.string.integrity_check_continue_anyway, null, (dialog) ->
+                        { performIntegrityCheck(); return Unit.INSTANCE; })
+                    .negativeButton(R.string.dialog_cancel, null, null)
                     .show();
         } else {
             performIntegrityCheck();
@@ -1526,20 +1525,20 @@ public class DeckPicker extends NavigationDrawerActivity implements
                         // If less than 2s has elapsed since sync started then don't ask for confirmation
                         if (System.currentTimeMillis() - syncStartTime < 2000) {
                             Connection.cancel();
-                            mProgressDialog.setContent(R.string.sync_cancel_message);
+                            mProgressDialog.message(R.string.sync_cancel_message, null, null);
                             return true;
                         }
                         // Show confirmation dialog to check if the user wants to cancel the sync
-                        MaterialDialog.Builder builder = new MaterialDialog.Builder(mProgressDialog.getContext());
-                        builder.content(R.string.cancel_sync_confirm)
+                        MaterialDialog syncCancelDialog = new MaterialDialog(mProgressDialog.getContext(), MaterialDialog.getDEFAULT_BEHAVIOR());
+                        syncCancelDialog.message(R.string.cancel_sync_confirm, null, null)
                                 .cancelable(false)
-                                .positiveText(R.string.dialog_ok)
-                                .negativeText(R.string.continue_sync)
-                                .onPositive((inner_dialog, which) -> {
-                                    mProgressDialog.setContent(R.string.sync_cancel_message);
+                                .negativeButton(R.string.continue_sync, null, null)
+                                .positiveButton(R.string.dialog_ok, null, (inner_dialog) -> {
+                                    mProgressDialog.message(R.string.sync_cancel_message, null, null);
                                     Connection.cancel();
+                                    return Unit.INSTANCE;
                                 });
-                        builder.show();
+                        syncCancelDialog.show();
                         return true;
                     } else {
                         return false;
@@ -1581,9 +1580,9 @@ public class DeckPicker extends NavigationDrawerActivity implements
             }
             if (mProgressDialog != null && mProgressDialog.isShowing()) {
                 // mProgressDialog.setTitle((String) values[0]);
-                mProgressDialog.setContent(currentMessage + "\n"
+                mProgressDialog.message(null, currentMessage + "\n"
                         + res
-                        .getString(R.string.sync_up_down_size, countUp / 1024, countDown / 1024));
+                        .getString(R.string.sync_up_down_size, countUp / 1024, countDown / 1024), null);
             }
         }
 
@@ -2189,12 +2188,10 @@ public class DeckPicker extends NavigationDrawerActivity implements
         final String currentName = getCol().getDecks().name(did);
         mDialogEditText.setText(currentName);
         mDialogEditText.setSelection(mDialogEditText.getText().length());
-        new MaterialDialog.Builder(DeckPicker.this)
-                .title(res.getString(R.string.rename_deck))
-                .customView(mDialogEditText, true)
-                .positiveText(res.getString(R.string.rename))
-                .negativeText(res.getString(R.string.dialog_cancel))
-                .onPositive((dialog, which) -> {
+        new MaterialDialog(DeckPicker.this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                .title(R.string.rename_deck, null)
+                // FIXME .customView(mDialogEditText, true)
+                .positiveButton(R.string.rename, null, (dialog) -> {
                     String newName = mDialogEditText.getText().toString().replaceAll("\"", "");
                     Collection col = getCol();
                     if (!TextUtils.isEmpty(newName) && !newName.equals(currentName)) {
@@ -2211,9 +2208,11 @@ public class DeckPicker extends NavigationDrawerActivity implements
                     if (mFragmented) {
                         loadStudyOptionsFragment(false);
                     }
+                    return Unit.INSTANCE;
                 })
-                .onNegative((dialog, which) -> dismissAllDialogFragments())
-                .build().show();
+                .negativeButton(R.string.dialog_cancel, null, (dialog) ->
+                        { dismissAllDialogFragments(); return Unit.INSTANCE; })
+                .show();
     }
 
 
@@ -2473,7 +2472,7 @@ public class DeckPicker extends NavigationDrawerActivity implements
 
         @Override
         public void onProgressUpdate(TaskData... values) {
-            mProgressDialog.setContent(values[0].getString());
+            mProgressDialog.message(null, values[0].getString(), null);
         }
     }
 }

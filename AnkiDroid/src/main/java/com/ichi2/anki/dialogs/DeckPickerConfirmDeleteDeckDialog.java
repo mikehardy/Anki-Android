@@ -10,6 +10,8 @@ import com.ichi2.anki.DeckPicker;
 import com.ichi2.anki.R;
 import com.ichi2.anki.analytics.AnalyticsDialogFragment;
 
+import kotlin.Unit;
+
 public class DeckPickerConfirmDeleteDeckDialog extends AnalyticsDialogFragment {
     public static DeckPickerConfirmDeleteDeckDialog newInstance(String dialogMessage) {
         DeckPickerConfirmDeleteDeckDialog f = new DeckPickerConfirmDeleteDeckDialog();
@@ -24,19 +26,19 @@ public class DeckPickerConfirmDeleteDeckDialog extends AnalyticsDialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Resources res = getResources();
-        return new MaterialDialog.Builder(getActivity())
-                .title(res.getString(R.string.delete_deck_title))
-                .content(getArguments().getString("dialogMessage"))
-                .iconAttr(R.attr.dialogErrorIcon)
-                .positiveText(res.getString(R.string.dialog_positive_delete))
-                .negativeText(res.getString(R.string.dialog_cancel))
+        return new MaterialDialog(getActivity(), MaterialDialog.getDEFAULT_BEHAVIOR())
+                .title(R.string.delete_deck_title, null)
+                .message(null, getArguments().getString("dialogMessage"), null)
+                .icon(R.attr.dialogErrorIcon, null)
                 .cancelable(true)
-                .onPositive((dialog, which) -> {
+                .positiveButton(R.string.dialog_positive_delete, null, (dialog) -> {
                     ((DeckPicker) getActivity()).deleteContextMenuDeck();
                     ((DeckPicker) getActivity()).dismissAllDialogFragments();
+                    return Unit.INSTANCE;
                 })
-                .onNegative((dialog, which) -> ((DeckPicker) getActivity()).dismissAllDialogFragments())
-                .build();
-
+                .negativeButton(R.string.dialog_cancel, null, (dialog) -> {
+                    ((DeckPicker) getActivity()).dismissAllDialogFragments();
+                    return Unit.INSTANCE;
+                });
     }
 }

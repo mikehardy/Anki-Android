@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import kotlin.Unit;
 import timber.log.Timber;
 
 
@@ -255,14 +256,14 @@ public class CardTemplateEditor extends AnkiActivity {
 
     private void showDiscardChangesDialog() {
         DiscardChangesDialog.getDefault(this)
-                .onPositive((dialog, which) -> {
+                .positiveButton(R.string.dialog_ok, null, (dialog) -> {
                     Timber.i("TemplateEditor:: OK button pressed to confirm discard changes");
                     getCol().getModels().update(CardTemplateEditor.this.mModelBackup);
                     getCol().getModels().flush();
                     getCol().reset();
                     finishWithAnimation(ActivityTransitionAnimation.RIGHT);
+                    return Unit.INSTANCE;
                 })
-                .build()
                 .show();
     }
 

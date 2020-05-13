@@ -86,7 +86,6 @@
         <item name="navDrawerImage">@drawable/nav_drawer_logo_black_theme</item>
         <!-- Dialog styles -->
         <item name="android:listPreferredItemHeight">56dip</item>
-        <item name="md_dark_theme">true</item>
         <item name="md_background_color">@color/theme_black_primary_light</item>
     </style>
 

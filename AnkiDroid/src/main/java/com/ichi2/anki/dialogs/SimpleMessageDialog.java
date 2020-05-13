@@ -7,6 +7,8 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.ichi2.anki.AnkiDroidApp;
 import com.ichi2.anki.R;
 
+import kotlin.Unit;
+
 public class SimpleMessageDialog extends AsyncDialogFragment {
 
     public interface SimpleMessageDialogListener {
@@ -34,14 +36,16 @@ public class SimpleMessageDialog extends AsyncDialogFragment {
     public MaterialDialog onCreateDialog(Bundle savedInstanceState) {
         // FIXME this should be super.onCreateDialog(Bundle), no?
         super.onCreate(savedInstanceState);
-        return new MaterialDialog.Builder(getActivity())
-                .title(getNotificationTitle())
-                .content(getNotificationMessage())
-                .positiveText(res().getString(R.string.dialog_ok))
-                .onPositive((dialog, which) -> ((SimpleMessageDialogListener) getActivity())
-                        .dismissSimpleMessageDialog(getArguments().getBoolean(
-                                "reload")))
-                .show();
+        MaterialDialog d = new MaterialDialog(getActivity(), MaterialDialog.getDEFAULT_BEHAVIOR())
+                .title(null, getNotificationTitle())
+                .message(null, getNotificationMessage(), null)
+                .positiveButton(R.string.dialog_ok, null, (dialog) -> {
+                    ((SimpleMessageDialogListener) getActivity())
+                            .dismissSimpleMessageDialog(getArguments().getBoolean("reload"));
+                    return Unit.INSTANCE;
+                });
+        d.show();
+        return d;
     }
 
 

@@ -1,5 +1,5 @@
 /****************************************************************************************
- * Copyright (c) 2015 Timothy Rae <perceptualchaos2@gmail.com>                          *
+ * Copyright (c) 2020 Mike Hardy <github@mikehardy.net>                                 *
  *                                                                                      *
  * This program is free software; you can redistribute it and/or modify it under        *
  * the terms of the GNU General Public License as published by the Free Software        *
@@ -13,32 +13,14 @@
  * You should have received a copy of the GNU General Public License along with         *
  * this program.  If not, see <http://www.gnu.org/licenses/>.                           *
  ****************************************************************************************/
+
 package com.ichi2.anki.dialogs;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+/**
+ * This interface is effectively a Java/Kotlin shim that allows the only-Kotlin-accessible
+ * single list item listener to call back into a Java supplied object
+ */
+public interface MaterialDialogSingleItemCallback {
 
-public class ContextMenuHelper {
-    public static String[] getValuesFromKeys(HashMap<Integer, String> map, int[] keys) {
-        String[] values = new String[keys.length];
-        for (int i = 0; i < keys.length; i++) {
-            values[i] = map.get(keys[i]);
-        }
-        return values;
-    }
-
-    public static List<String> getValuesListFromKeys(HashMap<Integer, String> map, int[] keys) {
-        String[] valuesArray = getValuesFromKeys(map, keys);
-        return Arrays.asList(valuesArray);
-    }
-
-    public static int[] integerListToArray(ArrayList<Integer> itemIds) {
-        int[] intItemIds = new int[itemIds.size()];
-        for (int i = 0; i < itemIds.size(); i++) {
-            intItemIds[i] = itemIds.get(i);
-        }
-        return intItemIds;
-    }
+    void onSelect(int index);
 }

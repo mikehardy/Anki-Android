@@ -30,6 +30,7 @@ import java.util.zip.ZipInputStream;
 
 import androidx.annotation.CheckResult;
 import androidx.annotation.Nullable;
+import kotlin.Unit;
 import timber.log.Timber;
 
 public class ImportUtils {
@@ -204,17 +205,16 @@ public class ImportUtils {
 
         public void showImportUnsuccessfulDialog(Activity activity, String errorMessage, boolean exitActivity) {
             Timber.e("showImportUnsuccessfulDialog() message %s", errorMessage);
-            String title = activity.getResources().getString(R.string.import_log_no_apkg);
-            new MaterialDialog.Builder(activity)
-                    .title(title)
-                    .content(errorMessage)
-                    .positiveText(activity.getResources().getString(R.string.dialog_ok))
-                    .onPositive((dialog, which) -> {
+            new MaterialDialog(activity, MaterialDialog.getDEFAULT_BEHAVIOR())
+                    .title(R.string.import_log_no_apkg, null)
+                    .message(null, errorMessage, null)
+                    .positiveButton(R.string.dialog_ok, null, (dialog) -> {
                         if (exitActivity) {
                             AnkiActivity.finishActivityWithFade(activity);
                         }
+                        return Unit.INSTANCE;
                     })
-                    .build().show();
+                    .show();
         }
 
 

@@ -109,7 +109,6 @@ APIs. It's visible when there aren't enough decks to fill the screen.
         <item name="dialogSendIcon">@drawable/ic_send_black_36dp</item>
         <!-- Dialog styles -->
         <item name="android:listPreferredItemHeight">56dip</item>
-        <item name="md_dark_theme">false</item>
     </style>
 
     <!-- Preferences screens -->

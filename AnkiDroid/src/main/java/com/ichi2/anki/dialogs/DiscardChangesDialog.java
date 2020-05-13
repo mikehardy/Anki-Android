@@ -23,10 +23,10 @@ import com.ichi2.anki.R;
 
 public class DiscardChangesDialog {
 
-    public static MaterialDialog.Builder getDefault(Context context) {
-        return new MaterialDialog.Builder(context)
-                .content(R.string.discard_unsaved_changes)
-                .positiveText(R.string.dialog_ok)
-                .negativeText(R.string.dialog_cancel);
+    public static MaterialDialog getDefault(Context context) {
+        return new MaterialDialog(context, MaterialDialog.getDEFAULT_BEHAVIOR())
+                .message(R.string.discard_unsaved_changes, null, null)
+                .positiveButton(R.string.dialog_ok, null, null)
+                .negativeButton(R.string.dialog_cancel, null, null);
     }
 }

@@ -89,6 +89,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
+import kotlin.Unit;
 import timber.log.Timber;
 
 interface PreferenceContext {
@@ -167,21 +168,22 @@ public class Preferences extends AppCompatPreferenceActivity implements Preferen
     @SuppressWarnings("deprecation") // Tracked as #5019 on github - convert to fragments
     protected MaterialDialog onCreateDialog(int id) {
         Resources res = getResources();
-        MaterialDialog.Builder builder = new MaterialDialog.Builder(this);
+        MaterialDialog dialog = new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR());
         switch (id) {
             case DIALOG_HEBREW_FONT:
-                builder.title(res.getString(R.string.fix_hebrew_text));
-                builder.content(res.getString(R.string.fix_hebrew_instructions,
-                        CollectionHelper.getCurrentAnkiDroidDirectory(this)));
-                builder.onPositive((dialog, which) -> {
+                dialog.title(R.string.fix_hebrew_text, null);
+                dialog.message(null, res.getString(R.string.fix_hebrew_instructions,
+                        CollectionHelper.getCurrentAnkiDroidDirectory(this)), null);
+                dialog.positiveButton(R.string.fix_hebrew_download_font, null, (innerDialog) -> {
                         Intent intent = new Intent("android.intent.action.VIEW", Uri.parse(getResources().getString(
                                 R.string.link_hebrew_font)));
                         startActivity(intent);
+                        return Unit.INSTANCE;
                     });
-                builder.positiveText(res.getString(R.string.fix_hebrew_download_font));
-                builder.negativeText(R.string.dialog_cancel);
+                dialog.negativeButton(R.string.dialog_cancel, null, null);
         }
-        return builder.show();
+        dialog.show();
+        return dialog;
     }
 
     @Override
@@ -688,12 +690,12 @@ public class Preferences extends AppCompatPreferenceActivity implements Preferen
                     if (haveNew == wantNew) {
                         break;
                     }
-                    MaterialDialog.Builder builder = new MaterialDialog.Builder(this);
+                    MaterialDialog dialog = new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR());
                     if (haveNew && !wantNew) {
                         // Going back to V1
-                        builder.title(R.string.sched_ver_toggle_title);
-                        builder.content(R.string.sched_ver_2to1);
-                        builder.onPositive((dialog, which) -> {
+                        dialog.title(R.string.sched_ver_toggle_title, null);
+                        dialog.message(R.string.sched_ver_2to1, null, null);
+                        dialog.positiveButton(R.string.dialog_ok, null, (innerDialog) -> {
                             getCol().modSchemaNoCheck();
                             try {
                                 getCol().changeSchedulerVer(1);
@@ -702,19 +704,19 @@ public class Preferences extends AppCompatPreferenceActivity implements Preferen
                                 // This should never be reached as we explicitly called modSchemaNoCheck()
                                 throw new RuntimeException(e2);
                             }
+                            return Unit.INSTANCE;
                         });
-                        builder.onNegative((dialog, which) -> {
+                        dialog.negativeButton(R.string.dialog_cancel, null, (innerDialog) -> {
                             ((CheckBoxPreference) pref).setChecked(true);
+                            return Unit.INSTANCE;
                         });
-                        builder.positiveText(R.string.dialog_ok);
-                        builder.negativeText(R.string.dialog_cancel);
-                        builder.show();
+                        dialog.show();
                         break;
                     }
                     // Going to V2
-                    builder.title(R.string.sched_ver_toggle_title);
-                    builder.content(R.string.sched_ver_1to2);
-                    builder.onPositive((dialog, which) -> {
+                    dialog.title(R.string.sched_ver_toggle_title, null);
+                    dialog.message(R.string.sched_ver_1to2, null, null);
+                    dialog.positiveButton(R.string.dialog_ok, null, (innerDialog) -> {
                         getCol().modSchemaNoCheck();
                         try {
                             getCol().changeSchedulerVer(2);
@@ -723,13 +725,13 @@ public class Preferences extends AppCompatPreferenceActivity implements Preferen
                             // This should never be reached as we explicitly called modSchemaNoCheck()
                             throw new RuntimeException(e2);
                         }
+                        return Unit.INSTANCE;
                     });
-                    builder.onNegative((dialog, which) -> {
+                    dialog.negativeButton(R.string.dialog_cancel, null, (innerDialog) -> {
                         ((CheckBoxPreference) pref).setChecked(false);
+                        return Unit.INSTANCE;
                     });
-                    builder.positiveText(R.string.dialog_ok);
-                    builder.negativeText(R.string.dialog_cancel);
-                    builder.show();
+                    dialog.show();
                     break;
                 }
             }

@@ -63,13 +63,14 @@ public class StyledProgressDialog extends Dialog {
 
     public static MaterialDialog show(Context context, CharSequence title, CharSequence message,
             boolean cancelable, DialogInterface.OnCancelListener cancelListener) {
-        return new MaterialDialog.Builder(context)
-                .title(title)
-                .content(message)
-                .progress(true, 0)
-                .cancelable(cancelable)
-                .cancelListener(cancelListener)
-                .show();
+        MaterialDialog dialog = new MaterialDialog(context, MaterialDialog.getDEFAULT_BEHAVIOR())
+                .title(null, title.toString())
+                .message(null, message.toString(), null)
+                //.progress(true, 0)
+                .cancelable(cancelable);
+        dialog.setOnCancelListener(cancelListener);
+        dialog.show();
+        return dialog;
     }
 
 

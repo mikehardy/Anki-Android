@@ -95,7 +95,6 @@
         <item name="dialogSendIcon">@drawable/ic_send_white_36dp</item>
         <!-- Dialog styles -->
         <item name="android:listPreferredItemHeight">56dip</item>
-        <item name="md_dark_theme">true</item>
     </style>
 
     <!-- Preferences screens -->

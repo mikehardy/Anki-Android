@@ -4,8 +4,10 @@ package com.ichi2.anki.dialogs;
 import android.content.res.Resources;
 import android.os.Bundle;
 import androidx.fragment.app.DialogFragment;
+import kotlin.Unit;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.ichi2.anki.AnkiDroidApp;
 import com.ichi2.anki.R;
 
     /**
@@ -49,13 +51,18 @@ import com.ichi2.anki.R;
             super.onCreate(savedInstanceState);
             Resources res = getActivity().getResources();
             String title = getArguments().getString("title");
-            return new MaterialDialog.Builder(getActivity())
-                .title("".equals(title) ? res.getString(R.string.app_name) : title)
-                    .content(getArguments().getString("message"))
-                    .positiveText(res.getString(R.string.dialog_ok))
-                    .negativeText(res.getString(R.string.dialog_cancel))
-                    .onPositive((dialog, which) -> mConfirm.run())
-                    .onNegative((dialog, which) -> mCancel.run())
-                    .show();
+            MaterialDialog d = new MaterialDialog(AnkiDroidApp.getInstance().getApplicationContext(), MaterialDialog.getDEFAULT_BEHAVIOR())
+                    .title(null, "".equals(title) ? res.getString(R.string.app_name) : title)
+                    .message(null, getArguments().getString("message"), null)
+                    .positiveButton(R.string.dialog_ok, null, (dialog) -> {
+                        mConfirm.run();
+                        return Unit.INSTANCE;
+                    })
+                    .negativeButton(R.string.dialog_cancel, null, (dialog) -> {
+                mCancel.run();
+                return Unit.INSTANCE;
+            });
+            d.show();
+            return d;
         }
     }

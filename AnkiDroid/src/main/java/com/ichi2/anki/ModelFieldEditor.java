@@ -19,6 +19,8 @@ package com.ichi2.anki;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.Toolbar;
+import kotlin.Unit;
+
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,8 +29,10 @@ import android.widget.EditText;
 import android.widget.ListView;
 
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.materialdialogs.list.DialogSingleChoiceExtKt;
 import com.ichi2.anim.ActivityTransitionAnimation;
 import com.ichi2.anki.dialogs.ConfirmationDialog;
+import com.ichi2.anki.dialogs.MaterialDialogSingleItemCallback;
 import com.ichi2.anki.dialogs.ModelEditorContextMenu;
 import com.ichi2.anki.exception.ConfirmModSchemaException;
 import com.ichi2.async.CollectionTask;
@@ -167,11 +171,10 @@ public class ModelFieldEditor extends AnkiActivity {
         mFieldNameInput = new EditText(this);
         mFieldNameInput.setSingleLine(true);
 
-        new MaterialDialog.Builder(this)
-                .title(R.string.model_field_editor_add)
-                .positiveText(R.string.dialog_ok)
-                .customView(mFieldNameInput, true)
-                .onPositive((dialog, which) -> {
+        new MaterialDialog(this, null)
+                .title(R.string.model_field_editor_add, null)
+                // FIXME .customView(mFieldNameInput, true)
+                .positiveButton(R.string.dialog_ok, null, (dialog) -> {
                     String fieldName = mFieldNameInput.getText().toString()
                             .replaceAll("[\\n\\r]", "");
 
@@ -206,8 +209,9 @@ public class ModelFieldEditor extends AnkiActivity {
                         mCol.getModels().update(mMod);
                         fullRefreshList();
                     }
+                    return Unit.INSTANCE;
                 })
-                .negativeText(R.string.dialog_cancel)
+                .negativeButton(R.string.dialog_cancel, null, null)
                 .show();
     }
 
@@ -258,11 +262,10 @@ public class ModelFieldEditor extends AnkiActivity {
         mFieldNameInput.setSingleLine(true);
         mFieldNameInput.setText(mFieldLabels.get(mCurrentPos));
         mFieldNameInput.setSelection(mFieldNameInput.getText().length());
-        new MaterialDialog.Builder(this)
-                .title(R.string.rename_model)
-                .positiveText(R.string.rename)
-                .customView(mFieldNameInput, true)
-                .onPositive((dialog, which) -> {
+        new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                .title(R.string.rename_model, null)
+                // FIXME .customView(mFieldNameInput, true)
+                .positiveButton(R.string.rename, null, (dialog) -> {
 
                         String fieldLabel = mFieldNameInput.getText().toString()
                                 .replaceAll("[\\n\\r]", "");
@@ -293,8 +296,9 @@ public class ModelFieldEditor extends AnkiActivity {
                                 ModelFieldEditor.this.showDialogFragment(c);
                             }
                         }
+                        return Unit.INSTANCE;
                     })
-                .negativeText(R.string.dialog_cancel)
+                .negativeButton(R.string.dialog_cancel, null, null)
                 .show();
     }
 
@@ -307,18 +311,17 @@ public class ModelFieldEditor extends AnkiActivity {
     private void repositionFieldDialog() {
         mFieldNameInput = new EditText(this);
         mFieldNameInput.setRawInputType(InputType.TYPE_CLASS_NUMBER);
-        new MaterialDialog.Builder(this)
-                .title(String.format(getResources().getString(R.string.model_field_editor_reposition), 1, mFieldLabels.size()))
-                .positiveText(R.string.dialog_ok)
-                .customView(mFieldNameInput, true)
-                .onPositive((dialog, which) -> {
+        new MaterialDialog(this, MaterialDialog.getDEFAULT_BEHAVIOR())
+                .title(null, String.format(getResources().getString(R.string.model_field_editor_reposition), 1, mFieldLabels.size()))
+                // FIXME .customView(mFieldNameInput, true)
+                .positiveButton(R.string.dialog_ok, null, (dialog) -> {
                         String newPosition = mFieldNameInput.getText().toString();
                         int pos;
                         try {
                             pos = Integer.parseInt(newPosition);
                         } catch (NumberFormatException n) {
                             UIUtils.showThemedToast(this, getResources().getString(R.string.toast_out_of_range), true);
-                            return;
+                            return Unit.INSTANCE;
                         }
 
                         if (pos < 1 || pos > mFieldLabels.size()) {
@@ -353,8 +356,9 @@ public class ModelFieldEditor extends AnkiActivity {
                                 ModelFieldEditor.this.showDialogFragment(c);
                             }
                         }
+                        return Unit.INSTANCE;
                     })
-                .negativeText(R.string.dialog_cancel)
+                .negativeButton(R.string.dialog_cancel, null, null)
                 .show();
     }
 
@@ -508,14 +512,7 @@ public class ModelFieldEditor extends AnkiActivity {
 
 
     private void closeActivity(int reason) {
-        switch (reason) {
-            case NORMAL_EXIT:
-                finishWithAnimation(ActivityTransitionAnimation.RIGHT);
-                break;
-            default:
-                finishWithAnimation(ActivityTransitionAnimation.RIGHT);
-                break;
-        }
+        finishWithAnimation(ActivityTransitionAnimation.RIGHT);
     }
 
 
@@ -525,7 +522,7 @@ public class ModelFieldEditor extends AnkiActivity {
     }
 
 
-    private MaterialDialog.ListCallback mContextMenuListener = (materialDialog, view, selection, charSequence) -> {
+    private MaterialDialogSingleItemCallback mContextMenuListener = (selection) -> {
         switch (selection) {
             case ModelEditorContextMenu.SORT_FIELD:
                 sortByField();

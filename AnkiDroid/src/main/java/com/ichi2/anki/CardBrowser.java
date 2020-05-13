@@ -29,9 +29,10 @@ import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import androidx.annotation.NonNull;
+
 import com.google.android.material.snackbar.Snackbar;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.ActionBar;
@@ -54,12 +55,12 @@ import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.afollestad.materialdialogs.MaterialDialog;
 import com.ichi2.anim.ActivityTransitionAnimation;
 import com.ichi2.anki.dialogs.CardBrowserMySearchesDialog;
 import com.ichi2.anki.dialogs.CardBrowserOrderDialog;
 import com.ichi2.anki.dialogs.ConfirmationDialog;
 import com.ichi2.anki.dialogs.IntegerDialog;
+import com.ichi2.anki.dialogs.MaterialDialogSingleItemCallback;
 import com.ichi2.anki.dialogs.RescheduleDialog;
 import com.ichi2.anki.dialogs.SimpleMessageDialog;
 import com.ichi2.anki.dialogs.TagsDialog;
@@ -104,8 +105,8 @@ import timber.log.Timber;
 public class CardBrowser extends NavigationDrawerActivity implements
         DeckDropDownAdapter.SubtitleListener {
 
-    // Properties in mCards. this is a stringly typed map for speed.
-    // Would be even faster as an array given these are all consts.
+    // Properties in mCards. this is a strongly typed map for speed.
+    // Would be even faster as an array given these are all constants.
     public static final String QUESTION = "question";
     public static final String ANSWER = "answer";
     public static final String FLAGS = "flags";
@@ -215,11 +216,9 @@ public class CardBrowser extends NavigationDrawerActivity implements
      */
     private BroadcastReceiver mUnmountReceiver = null;
 
-    private MaterialDialog.ListCallbackSingleChoice mOrderDialogListener =
-            new MaterialDialog.ListCallbackSingleChoice() {
+    private MaterialDialogSingleItemCallback mOrderDialogListener = new MaterialDialogSingleItemCallback() {
         @Override
-        public boolean onSelection(MaterialDialog materialDialog, View view, int which,
-                CharSequence charSequence) {
+        public void onSelect(int which) {
             if (which != mOrder) {
                 mOrder = which;
                 mOrderAsc = false;
@@ -227,12 +226,12 @@ public class CardBrowser extends NavigationDrawerActivity implements
                     getCol().getConf().put("sortType", fSortTypes[1]);
                     AnkiDroidApp.getSharedPrefs(getBaseContext()).edit()
                             .putBoolean("cardBrowserNoSorting", true)
-                            .commit();
+                            .apply();
                 } else {
                     getCol().getConf().put("sortType", fSortTypes[mOrder]);
                     AnkiDroidApp.getSharedPrefs(getBaseContext()).edit()
                             .putBoolean("cardBrowserNoSorting", false)
-                            .commit();
+                            .apply();
                 }
                 // default to descending for non-text fields
                 if ("noteFld".equals(fSortTypes[mOrder])) {
@@ -246,7 +245,6 @@ public class CardBrowser extends NavigationDrawerActivity implements
                 Collections.reverse(mCards);
                 updateList();
             }
-            return true;
         }
     };
 

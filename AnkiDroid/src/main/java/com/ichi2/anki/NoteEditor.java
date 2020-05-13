@@ -98,6 +98,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import kotlin.Unit;
 import timber.log.Timber;
 
 /**
@@ -943,11 +944,12 @@ public class NoteEditor extends AnkiActivity {
 
     private void showDiscardChangesDialog() {
         DiscardChangesDialog.getDefault(this)
-                .onPositive((dialog, which) -> {
+                .positiveButton(R.string.dialog_ok, null, (dialog) -> {
                     Timber.i("NoteEditor:: OK button pressed to confirm discard changes");
                     closeNoteEditor();
+                    return Unit.INSTANCE;
                 })
-                .build().show();
+                .show();
     }
 
 
