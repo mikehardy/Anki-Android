@@ -24,8 +24,12 @@
 -keepattributes **
 #5806 - Class: ActionBarOverflow
 -keep public class androidx.appcompat.view.menu.** { *; }
--dontpreverify
--dontoptimize
--dontshrink
--dontwarn **
--dontnote **
+
+# This is optional for Android, and reduces processing time a bit per manual
+#-dontoptimize
+#-dontshrink
+
+# These 2 seem dangerous to have on without inspection.
+# Disabling temporarily for inspection.
+#-dontwarn **
+#-dontnote **
