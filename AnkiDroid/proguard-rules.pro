@@ -23,7 +23,6 @@
 
 -keepattributes **
 #5806 - Class: ActionBarOverflow
--keep public class android.support.v7.internal.view.menu.** { *; }
 -keep public class androidx.appcompat.view.menu.** { *; }
 -dontpreverify
 -dontoptimize
