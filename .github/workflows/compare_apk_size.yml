@@ -1,0 +1,81 @@
+name: APK Size Comparison
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    # Ignore merge queue branches on push; avoids merge_group+push concurrency race since ref is same
+    branches-ignore:
+      - 'gh-readonly-queue/**'
+  merge_group:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sizeCheck:
+    name: APK Size Check
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    env:
+      STOREFILE: ~/src/android-keystore
+      STOREPASS: testpass
+      KEYPASS: testpass
+      KEYALIAS: nrkeystorealias
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          branch: main
+          fetch-depth: 1
+
+      - name: Configure JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - name: Create Test Keystore
+        run: |
+          mkdir "$HOME/src" > /dev/null 2>&1
+          echo y | keytool -genkeypair -dname "cn=AnkiDroid, ou=ankidroid, o=AnkiDroid, c=US" -alias $KEYALIAS -keypass $KEYPASS -keystore "$STOREFILE" -storepass $STOREPASS -keyalg RSA -validity 20000
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        timeout-minutes: 5
+        with:
+          # Only write to the cache for builds on the 'main' branches, stops branches evicting main cache
+          # Builds on other branches will only read from main branch cache writes
+          # Comment this and the with: above out for performance testing on a branch
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+          gradle-home-cache-cleanup: true
+
+      - name: Assemble Baseline APK
+        # This makes sure we fetch gradle network resources with a retry
+        uses: nick-invision/retry@v3
+        with:
+          timeout_minutes: 10
+          retry_wait_seconds: 60
+          max_attempts: 3
+          command: KSTOREPWD=$STOREPASS KEYPWD=$KEYPASS ./gradlew :AnkiDroid:assemblePlayRelease --daemon
+
+      - name: Get Baseline APK size
+        run: ls -lrt AnkiDroid/build/outputs/apk/play/release/AnkiDroid-play-arm64-v8a-release.apk | awk '{print $5}'
+
+      - name: Checkout PR
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Assemble PR APK
+        # This makes sure we fetch gradle network resources with a retry
+        uses: nick-invision/retry@v3
+        with:
+          timeout_minutes: 10
+          retry_wait_seconds: 60
+          max_attempts: 3
+          command: KSTOREPWD=$STOREPASS KEYPWD=$KEYPASS ./gradlew :AnkiDroid:assemblePlayRelease --daemon
+
+      - name: Get PR APK size
+        run: ls -lrt AnkiDroid/build/outputs/apk/play/release/AnkiDroid-play-arm64-v8a-release.apk | awk '{print $5}'
+
