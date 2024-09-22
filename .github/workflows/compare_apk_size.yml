@@ -42,11 +42,11 @@ jobs:
           echo y | keytool -genkeypair -dname "cn=AnkiDroid, ou=ankidroid, o=AnkiDroid, c=US" -alias $KEYALIAS -keypass $KEYPWD -keystore $KEYSTOREPATH -storepass $KEYSTOREPWD -keyalg RSA -validity 20000
         shell: bash
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        timeout-minutes: 5
-        with:
-          cache-read-only: true
+#      - name: Setup Gradle
+#        uses: gradle/actions/setup-gradle@v4
+#        timeout-minutes: 5
+#        with:
+#          cache-read-only: true
 
       - name: Checkout PR
         uses: actions/checkout@v4
